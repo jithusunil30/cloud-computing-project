@@ -1,0 +1,35 @@
+{
+  "name": "ecofinops-ai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "# PROJECT SPECIFICATION: ECOFINOPS AI ## 1. Project Identity **Project Name:** EcoFinOps AI **Full Title:** EcoFinOps AI: An Agent…",
+  "scripts": {
+    "dev": "nitrostack-cli dev",
+    "build": "nitrostack-cli build",
+    "start": "npm run build && nitrostack-cli start",
+    "start:prod": "nitrostack-cli start",
+    "upgrade": "nitrostack-cli upgrade",
+    "install:all": "nitrostack-cli install",
+    "widget": "npm --prefix src/widgets",
+    "test": "npx tsx tests/agent-unit-tests.ts && npx tsx tests/agent-integration-tests.ts",
+    "test:unit": "npx tsx tests/agent-unit-tests.ts",
+    "test:integration": "npx tsx tests/agent-integration-tests.ts",
+    "test:python": "powershell -Command \"$env:PYTHONPATH='src/python;src/python/src'; python src/python/test_pipeline.py; python src/python/test_forecasting_evaluation.py; python src/python/test_audit_verification.py; python src/python/test_v3_dataset_loader.py\""
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "@nitrostack/core": "^1.1.0",
+    "zod": "^3.22.4",
+    "@modelcontextprotocol/ext-apps": ">=0.1.0"
+  },
+  "devDependencies": {
+    "@nitrostack/cli": "^1.1.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.3.3"
+  },
+  "author": "NitroStudio",
+  "nitrostack": {
+    "skillsVersion": "1.0.0"
+  }
+}

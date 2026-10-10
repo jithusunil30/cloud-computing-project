@@ -1,0 +1,66 @@
+{
+  "version": "1.0.0",
+  "widgets": [
+    {
+      "uri": "/dashboard",
+      "name": "EcoFinOps AI 12-Agent Console",
+      "description": "Unified 12-agent monitoring console with real-time execution trace, FinOps analytics, carbon intelligence, workload scheduling trade-offs, and audit-grade verification reports.",
+      "examples": [
+        {
+          "name": "Cross-Domain Optimization Example",
+          "description": "Full multi-agent execution trace and optimization findings",
+          "data": {
+            "keyMetrics": {
+              "totalSpendUsd": 333.39,
+              "projectedMonthlySpendUsd": 476.27,
+              "forecastNext48hUsd": 47.63,
+              "anomaliesCount": 41,
+              "estimatedWasteUsd": 124.02,
+              "totalCarbonKgco2e": 50.85,
+              "potentialSavingsUsd": 69.1,
+              "potentialCarbonReductionKg": 8.45
+            },
+            "verificationSummary": {
+              "status": "VERIFIED",
+              "verifiedChecksCount": 6
+            }
+          }
+        }
+      ],
+      "tags": ["finops", "carbon", "agents", "multi-agent", "dashboard"]
+    },
+    {
+      "uri": "/resource-utilization",
+      "name": "Resource Utilization Analysis",
+      "description": "Displays fleet utilization, persistent underutilization, and safe rightsizing opportunities with p95 peak CPU safeguards.",
+      "examples": [
+        {
+          "name": "30-Day Fleet Analysis",
+          "description": "Sample fleet utilization and rightsizing recommendations",
+          "data": {
+            "period": { "startDate": "2026-09-01", "endDate": "2026-09-30" },
+            "summary": { "resourcesAnalyzed": 6, "persistentLowCount": 2, "estimatedWasteUsd": 215.4 }
+          }
+        }
+      ],
+      "tags": ["finops", "resources", "utilization", "rightsizing"]
+    },
+    {
+      "uri": "/schedule-comparison",
+      "name": "Workload Schedule Comparison",
+      "description": "Side-by-side comparison of immediate baseline, cost-aware, and carbon-aware execution schedules with deadline and capacity validation.",
+      "examples": [
+        {
+          "name": "Nightly ETL Optimization",
+          "description": "Schedule trade-offs for 4-hour batch job",
+          "data": {
+            "workloadId": "wl-nightly-etl-001",
+            "weights": { "cost": 0.5, "carbon": 0.5 }
+          }
+        }
+      ],
+      "tags": ["optimization", "scheduling", "carbon-aware", "cost-aware"]
+    }
+  ],
+  "generatedAt": "2026-10-10T10:00:00.000Z"
+}

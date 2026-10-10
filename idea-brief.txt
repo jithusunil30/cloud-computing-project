@@ -1,0 +1,641 @@
+# PROJECT SPECIFICATION: ECOFINOPS AI
+
+## 1. Project Identity
+
+**Project Name:** EcoFinOps AI
+
+**Full Title:** EcoFinOps AI: An Agentic Cloud FinOps and Carbon-Aware Workload Optimization Platform Using Machine Learning, Multi-Agent Intelligence, and Model Context Protocol (MCP).
+
+**Project Type:** Full-stack cloud computing, machine learning, agentic AI, cloud financial management, sustainable computing, and intelligent workload scheduling.
+
+**Primary Deployment Target:** NitroCloud using the official NitroStack MCP framework.
+
+**Development Environment:** Windows 10/11.
+
+**Primary Objective:** Build a functional, secure, production-oriented web application that analyzes cloud usage, forecasts expenditure, detects abnormal spending, identifies potentially underutilized resources, estimates carbon emissions, and recommends cost-aware and carbon-aware workload schedules. Use MCP tools to expose operational capabilities to an AI agent.
+
+This must be a real software project with working backend logic, validated data, functional visualizations, persistent application state where appropriate, automated tests, deployment configuration, and documentation. Do not create a static UI mockup or simulate successful backend operations.
+
+## 2. Core Design Principles
+
+1. Build a minimum viable product first, then expand functionality incrementally.
+2. Use official NitroStack documentation and the currently supported SDK conventions.
+3. Do not invent SDK methods, cloud deployment commands, API endpoints, datasets, experimental results, or performance improvements.
+4. Clearly distinguish implemented features, simulated features, planned features, and external integrations.
+5. Make the initial application useful without requiring a paid cloud account.
+6. Never execute destructive cloud operations without explicit user authorization.
+7. Ensure all recommendations can be traced to input data, calculations, model outputs, or documented assumptions.
+8. Use real datasets or clearly labelled synthetic demonstration data.
+9. Do not present estimated emissions as measured carbon emissions.
+10. Provide clear installation instructions suitable for a beginner with no prior software development experience.
+
+## 3. Technology Stack
+
+Use the following architecture, adapting only when official SDK compatibility requires it.
+
+### Frontend
+- React and TypeScript.
+- Vite for frontend development and production builds.
+- Tailwind CSS for styling.
+- Recharts for charts and time-series visualizations.
+- Lucide icons for consistent interface icons.
+- Accessible, reusable UI components.
+- Responsive desktop, tablet, and mobile layouts.
+
+### Backend
+- Python and FastAPI for data analytics, forecasting, optimization, and application APIs.
+- Pandas and NumPy for data processing.
+- Scikit-learn for anomaly detection, regression, and forecasting baselines.
+- Pydantic for request and response validation.
+- SQLAlchemy and SQLite for the local MVP; use a supported managed database for production if needed.
+
+### Agentic AI and MCP
+- TypeScript for the NitroStack MCP server.
+- Use the official NitroStack SDK and decorators, schemas, transport configuration, authentication, and deployment procedures supported by the installed SDK version.
+- Expose typed, documented tools that allow an agent to query forecasts, inspect anomalies, calculate cost estimates, estimate emissions, compare schedules, and generate recommendations.
+- Connect an LLM only through a supported provider interface and secure server-side configuration.
+- Provide a deterministic fallback for essential analytical functionality if the LLM is unavailable.
+
+### Deployment
+- NitroCloud for the MCP service, subject to account and deployment compatibility.
+- Deploy the frontend and Python analytics service to hosting platforms that support their actual runtime requirements.
+- If NitroCloud cannot host the entire stack, deploy the compatible MCP service there and use appropriate hosting for the other components.
+- Never assume deploying an MCP server automatically deploys the frontend, Python service, or database.
+
+## 4. Application Modules
+
+### Module A: Cloud Usage Data Management
+
+Build a complete data ingestion module supporting CSV uploads and validated sample datasets.
+
+Required fields where available:
+- Timestamp.
+- Provider and region.
+- Service name and resource identifier.
+- Resource type.
+- CPU utilization.
+- Memory utilization.
+- Network usage.
+- Storage usage.
+- Request count.
+- Duration or runtime.
+- Cost amount.
+- Currency.
+- Energy consumption, if available.
+- Carbon intensity, if available.
+- Workload priority and deadline for scheduling tasks.
+
+Requirements:
+- Accept different column names through an explicit mapping interface.
+- Validate file type, size, schema, missing values, timestamps, numerical ranges, and duplicate records.
+- Display upload progress and a validation report.
+- Report rejected rows and reasons.
+- Allow users to preview records before importing them.
+- Store import history and provide safe deletion or replacement of imported datasets.
+- Never silently fabricate missing values or emissions data.
+- Label synthetic datasets clearly.
+
+Provide a sample dataset generator for development. Include realistic time patterns and configurable scenarios, but identify generated records as synthetic.
+
+### Module B: Cloud FinOps Analytics
+
+Create a financial analytics engine that calculates:
+- Total expenditure for a selected period.
+- Daily, weekly, and monthly spending.
+- Cost by provider, service, region, and resource.
+- Cost per request or workload when the necessary measurements exist.
+- Budget consumption percentage.
+- Forecasted spending at month end.
+- Resource utilization and estimated waste.
+- Cost anomalies and their severity.
+- Potential savings under explicitly stated assumptions.
+
+Implement budget configuration with thresholds and alerts.
+
+For utilization-based waste detection, require configurable utilization thresholds and minimum observation windows. Do not automatically classify a resource as wasteful based on a single low reading.
+
+Use actual billing amounts when supplied. Any modeled cost must use explicitly supplied or documented pricing assumptions.
+
+### Module C: Machine Learning Intelligence
+
+Implement a modular ML pipeline.
+
+#### Cost forecasting
+- Start with a naive baseline.
+- Add a moving-average or suitable regression baseline.
+- Compare with a stronger model, such as Random Forest or gradient boosting, when appropriate.
+- Use chronological train, validation, and test splits.
+- Prevent data leakage.
+- Forecast future expenditure over selectable horizons.
+- Provide prediction intervals only if supported by the chosen method.
+- Record model version, training period, features, and evaluation results.
+
+#### Anomaly detection
+- Begin with robust statistical thresholds.
+- Add Isolation Forest when sufficient suitable data exists.
+- Return anomaly score, severity, timestamp, affected resource, and explanatory features.
+- Avoid representing unsupervised anomaly scores as calibrated probabilities of fraud or failure.
+
+#### Resource utilization analysis
+- Identify persistent underutilization and sudden usage increases.
+- Account for workload variability and minimum resource requirements.
+- Estimate possible savings only where the cost and resource assumptions are available.
+
+#### Evaluation metrics
+For forecasting, calculate MAE, RMSE, and optionally MAPE when mathematically appropriate.
+
+For labelled anomaly detection, calculate precision, recall, F1-score, and PR-AUC when the data supports those metrics.
+
+Display actual evaluation results, test-set size, evaluation period, and baseline comparison. If there is insufficient data, display “Not enough data to evaluate” instead of invented scores.
+
+### Module D: Carbon Intelligence Engine
+
+Implement a transparent carbon-estimation pipeline.
+
+Required inputs where available:
+- Estimated energy consumption in kWh.
+- Carbon intensity in gCO2e/kWh.
+- Region and timestamp.
+- Workload runtime.
+- Provider-specific energy information when available.
+
+Use the calculation:
+
+Estimated emissions in kgCO2e = Energy consumption in kWh × Carbon intensity in gCO2e/kWh ÷ 1000.
+
+Requirements:
+- Record the source, date, geographic region, units, and assumptions for each carbon-intensity value.
+- Support time-varying carbon intensity when trustworthy data is available.
+- Separate operational emissions from embodied emissions.
+- Do not claim complete lifecycle emissions if only operational data is available.
+- Never infer actual server energy consumption from CPU utilization alone without an explicit, documented estimation model.
+- Display uncertainty or limitations prominently.
+- Support an illustrative scenario mode when real energy measurements are unavailable.
+
+Show estimated emissions by day, service, region, and workload where the data permits.
+
+### Module E: Carbon-Aware Workload Scheduler
+
+Build a scheduling optimizer for flexible, non-urgent workloads.
+
+Inputs:
+- Workload arrival time.
+- Estimated duration.
+- Workload priority.
+- Deadline.
+- Allowed execution window.
+- Resource requirements.
+- Cost per execution interval.
+- Carbon intensity by time and region, when available.
+
+Implement and compare:
+1. Immediate execution baseline.
+2. Cost-aware scheduling.
+3. Carbon-aware scheduling.
+4. Combined cost-and-carbon scheduling.
+
+The optimizer must respect deadlines, allowed execution windows, capacity limits, and configured priorities.
+
+Use a transparent weighted objective, such as:
+
+Objective = normalized cost weight × estimated cost
+          + normalized carbon weight × estimated emissions
+          + deadline violation penalty.
+
+Make weights configurable and explain the trade-offs.
+
+If no feasible schedule exists, report the reason. Do not claim optimization savings until the baseline and optimized schedules have been evaluated using the same workload and assumptions.
+
+The initial implementation should generate a schedule and recommendation only. Do not execute real workloads.
+
+### Module F: Multi-Agent Intelligence
+
+Design a coordinated, bounded agent architecture with the following roles.
+
+#### 1. FinOps Analyst Agent
+Analyzes spending, budgets, resource usage, and cost anomalies. It may request calculations through authorized MCP tools.
+
+#### 2. Carbon Intelligence Agent
+Evaluates estimated energy and emissions, identifies data-quality limitations, and compares possible workload schedules.
+
+#### 3. Forecasting Agent
+Requests forecasts from the ML service, explains uncertainty, and reports model limitations. It must not fabricate model outputs.
+
+#### 4. Optimization Agent
+Combines cost, carbon, capacity, and deadline constraints to rank candidate actions.
+
+#### 5. Supervisor Agent
+Classifies user requests, selects the appropriate specialist, coordinates tool calls, resolves conflicting recommendations, and prepares the final response.
+
+#### 6. Verification Agent
+Checks that recommendations are supported by tool results, units are consistent, assumptions are disclosed, and proposed actions satisfy constraints.
+
+Agent orchestration requirements:
+- Use explicit typed inputs and outputs.
+- Maintain a trace of tool calls and agent decisions.
+- Limit the number of steps, tool calls, and execution time.
+- Handle tool errors and unavailable model providers.
+- Avoid unnecessary multi-agent calls for simple calculations.
+- Do not allow agents to invent billing data, emissions values, or evaluation results.
+- Require evidence-backed recommendations.
+- Include human approval for any future external write action.
+- Provide a deterministic, rule-based fallback for core analytics.
+
+If an LLM is not configured, the application must still support dashboard analytics and direct MCP tool execution. Do not label rule-based logic as autonomous AI.
+
+### Module G: NitroStack MCP Server
+
+Create a properly documented MCP service using the official NitroStack framework.
+
+Expose tools with validated schemas, descriptive names, explicit units, typed results, and meaningful error messages.
+
+Required tools:
+- `get_cost_summary`
+- `forecast_cloud_cost`
+- `detect_cost_anomalies`
+- `analyze_resource_utilization`
+- `estimate_carbon_emissions`
+- `compare_workload_schedules`
+- `recommend_cost_optimization`
+- `recommend_carbon_optimization`
+- `get_model_evaluation`
+- `generate_optimization_report`
+
+Each tool must:
+- Validate all inputs.
+- Use real application functions rather than hardcoded example outputs.
+- Return structured results and relevant provenance.
+- Support bounded result sizes and pagination where necessary.
+- Enforce authorization for sensitive information.
+- Log operational metadata without exposing secrets.
+- Fail safely if its data source is unavailable.
+- Include automated tests.
+
+Use only MCP transports and configuration options documented for the selected NitroStack SDK version. Do not invent SDK APIs.
+
+### Module H: Conversational AI Workspace
+
+Build an assistant interface with example questions:
+- “Why did cloud spending increase this week?”
+- “Which resources have persistent low utilization?”
+- “Forecast spending through the end of this month.”
+- “Estimate emissions for the selected period.”
+- “Compare immediate execution with carbon-aware scheduling.”
+- “Which optimization recommendations have the strongest supporting evidence?”
+
+For each answer, show:
+- A concise explanation.
+- The data period analyzed.
+- Relevant resources or services.
+- Calculations or model outputs.
+- Assumptions and limitations.
+- Evidence or links to dashboard records.
+- Tool execution history when appropriate.
+
+Do not claim an action was executed when it was only recommended.
+
+### Module I: Recommendations and Approval
+
+Create a recommendation management interface.
+
+Each recommendation should include:
+- Recommendation ID.
+- Category.
+- Description.
+- Affected resource or workload.
+- Supporting evidence.
+- Estimated cost impact.
+- Estimated emissions impact.
+- Confidence or uncertainty information when available.
+- Required assumptions.
+- Priority and status.
+- Creation timestamp.
+- Approval and rejection history.
+
+Statuses: Proposed, Under Review, Approved, Rejected, Completed, and Failed.
+
+For the MVP, approval changes recommendation status only. Do not connect approval buttons to actual cloud deletion, resizing, billing changes, or workload execution.
+
+If provider integrations are added later, require role-based permissions, a preview of changes, explicit confirmation, audit logging, and a rollback or recovery strategy where feasible.
+
+## 5. Dashboard and User Experience
+
+Create a premium, modern, enterprise-grade sustainability and FinOps dashboard.
+
+### Visual design
+- Use a deep navy or charcoal base, emerald-green sustainability accents, cyan highlights, and restrained neutral surfaces.
+- Use a clean sans-serif font, consistent spacing, rounded cards, subtle shadows, and clear hierarchy.
+- Avoid excessive gradients, oversized headings, clutter, and decorative effects that reduce readability.
+- Support light and dark themes.
+- Provide responsive layouts for desktop, tablet, and mobile.
+- Meet WCAG accessibility guidelines where practical, including keyboard navigation, visible focus states, and sufficient contrast.
+
+### Main application navigation
+1. Overview.
+2. Cost Analytics.
+3. Forecasting.
+4. Resource Optimization.
+5. Carbon Intelligence.
+6. Workload Scheduler.
+7. AI Agents.
+8. MCP Tools.
+9. Recommendations.
+10. Datasets and Models.
+11. Audit Logs.
+12. Settings.
+
+### Overview dashboard
+
+Create metric cards for:
+- Actual spending for the selected period.
+- Forecasted spending, clearly labelled as a forecast.
+- Budget utilization.
+- Number of detected anomalies.
+- Estimated emissions.
+- Pending optimization recommendations.
+
+Each card must use actual computed data. When data is missing, display an empty state rather than a fabricated value.
+
+### Required charts
+- Actual versus forecasted cost over time.
+- Daily spending by service.
+- Budget consumption.
+- Resource utilization over time.
+- Anomaly timeline.
+- Estimated emissions over time.
+- Cost versus emissions comparison for candidate schedules.
+- Optimization opportunity breakdown.
+
+Add date-range filters, service filters, region filters, chart legends, tooltips, loading indicators, and empty states.
+
+Use accessible chart labels and sensible axis units. Do not use misleading truncated axes.
+
+### Tables
+Provide searchable, sortable, paginated tables for:
+- Cloud resources.
+- Cost anomalies.
+- Forecast results.
+- Scheduling candidates.
+- Optimization recommendations.
+- Dataset imports.
+- Model evaluations.
+- Agent execution traces.
+
+Allow CSV export where appropriate. Escape untrusted text and prevent spreadsheet-formula injection during export.
+
+### Animation
+Use subtle, purposeful animation:
+- Short page transitions.
+- Smooth chart entrance animations.
+- Metric count-up animations that do not interfere with screen readers.
+- Skeleton loaders while data is loading.
+- Animated status indicators for active tasks.
+- Smooth modal and drawer transitions.
+- Clear success and failure notifications.
+
+Respect reduced-motion preferences. Never animate numbers in a way that suggests real savings or live cloud activity when no such operation occurred.
+
+### Interaction quality
+- Add global date and region filters where applicable.
+- Persist user preferences safely.
+- Provide helpful form validation and inline error messages.
+- Add tooltips explaining technical terms.
+- Include demo-data reset functionality with confirmation.
+- Provide meaningful loading, error, success, and empty states.
+- Ensure every button performs its advertised action.
+
+## 6. Database Design
+
+Use relational storage for structured application data.
+
+Create appropriate tables or equivalent models for:
+- Users and roles.
+- Workspaces.
+- Dataset imports.
+- Cloud usage records.
+- Billing records.
+- Resource inventory.
+- Carbon intensity records.
+- Forecast runs.
+- Model versions and evaluation results.
+- Anomaly detections.
+- Workload scheduling scenarios.
+- Recommendations.
+- Recommendation approvals.
+- Agent runs and tool executions.
+- Audit events.
+- Application settings.
+
+Use unique identifiers, foreign keys, timestamps, indexes, and database migrations.
+
+Do not store API keys, passwords, or private credentials in ordinary application records or source code.
+
+Support local development with SQLite. Document how to move to a supported managed relational database when deploying a multi-user production service.
+
+## 7. API Design
+
+Create versioned, documented application endpoints where needed, for example:
+
+- `GET /api/v1/health`
+- `GET /api/v1/cost/summary`
+- `POST /api/v1/cost/forecast`
+- `POST /api/v1/anomalies/detect`
+- `GET /api/v1/resources`
+- `POST /api/v1/carbon/estimate`
+- `POST /api/v1/schedules/compare`
+- `GET /api/v1/recommendations`
+- `POST /api/v1/recommendations/{id}/approve`
+- `POST /api/v1/recommendations/{id}/reject`
+- `GET /api/v1/models/evaluation`
+
+Implement endpoints using validated request and response schemas, appropriate HTTP status codes, error handling, and authorization.
+
+These are proposed application routes. Implement and document them; do not imply that they already exist.
+
+## 8. Security and Reliability
+
+Implement:
+- Input validation and safe parsing of uploaded files.
+- File size and type limits.
+- Authentication and role-based authorization where required.
+- Secure environment-variable management.
+- No committed credentials or API keys.
+- CORS restricted to approved origins.
+- Rate limiting where supported by the deployment architecture.
+- Safe error responses that do not expose stack traces or secrets.
+- Audit logs for privileged operations.
+- Request timeouts and bounded agent execution.
+- Dependency pinning and vulnerability checks.
+- Database backups appropriate to the hosting platform.
+- Health checks and structured logs.
+- Protection against prompt injection in uploaded data and external content.
+- Separation of untrusted data from system instructions.
+- Explicit confirmation before future external write operations.
+
+Use least-privilege access. Do not request broad cloud administrator permissions for a read-only prototype.
+
+## 9. Testing and Validation
+
+Create automated tests for:
+- CSV validation and ingestion.
+- Missing and invalid data.
+- Cost calculations.
+- Carbon conversion and unit handling.
+- Forecasting baselines.
+- Anomaly detection.
+- Scheduling feasibility and deadlines.
+- MCP tool input validation.
+- MCP tool output structure.
+- Agent failure handling.
+- API authorization.
+- Frontend loading, empty, success, and error states.
+
+Add integration tests for the frontend, Python service, database, and MCP service where feasible.
+
+Provide a repeatable demo scenario with documented sample inputs and expected deterministic outputs.
+
+Measure model performance only on appropriate held-out data. Report baseline comparisons and limitations. Do not invent benchmarks, savings, accuracy, deployment status, or successful test results.
+
+## 10. Deployment Architecture
+
+The intended architecture is:
+
+User Browser
+    |
+    v
+React + TypeScript Dashboard
+    |
+    v
+Authenticated Application API
+    |
+    +---- Python Analytics Service
+    |         |
+    |         +---- Data Validation
+    |         +---- Cost Forecasting
+    |         +---- Anomaly Detection
+    |         +---- Carbon Estimation
+    |         +---- Scheduling Optimizer
+    |
+    +---- Relational Database
+    |
+    +---- NitroStack MCP Service
+              |
+              +---- Typed MCP Tools
+              +---- Supervisor and Specialist Agents
+              +---- Verification and Approval Logic
+              |
+              v
+         Authorized Tool Results
+
+The LLM provider, if configured, must be accessed through a secure server-side integration. It must not receive credentials or unrestricted access to application infrastructure.
+
+Deployment requirements:
+- Local development instructions for Windows.
+- Separate development and production configuration.
+- Environment-variable examples without real secrets.
+- Production build instructions.
+- Health checks and logs.
+- Supported NitroStack MCP deployment configuration.
+- Appropriate deployment for the frontend, Python service, and database.
+- CORS and authentication configuration.
+- A smoke-test checklist after deployment.
+- Instructions for shutting down or removing optional external resources.
+
+Do not assume that NitroCloud can host every component. Verify the current NitroStack documentation and deploy each service to a platform compatible with its runtime.
+
+## 11. Beginner-Friendly Project Deliverables
+
+Generate the project in organized stages rather than one enormous, unverified code dump.
+
+Required repository structure should separate:
+- `frontend/`
+- `backend/`
+- `mcp-server/`
+- `data/`
+- `models/`
+- `tests/`
+- `docs/`
+- deployment configuration
+- root README and environment examples
+
+Include:
+- Complete source code.
+- Dependency manifests and lockfiles where supported.
+- Database migrations.
+- Sample data and data dictionary.
+- Unit and integration tests.
+- Architecture diagram.
+- API documentation.
+- MCP tool reference.
+- Model training and evaluation instructions.
+- Setup guide for Windows.
+- Local execution commands.
+- Deployment guide for NitroCloud.
+- Troubleshooting guide for common errors.
+- Security and limitations documentation.
+- A demonstration script suitable for a college project review.
+
+For every setup stage, explain the commands in simple language and state the expected result. Do not assume the user knows Node.js, Python environments, npm, Git, APIs, Docker, databases, or cloud hosting.
+
+## 12. Implementation Roadmap
+
+### Phase 1: Working foundation
+Create the repository, frontend, Python backend, local database, basic health checks, and sample dataset.
+
+### Phase 2: Analytics
+Implement cost calculations, resource utilization analysis, anomaly detection, and basic forecasting.
+
+### Phase 3: Carbon intelligence
+Implement documented carbon estimates, data provenance, and unit validation.
+
+### Phase 4: Scheduling optimization
+Implement immediate, cost-aware, carbon-aware, and combined scheduling baselines.
+
+### Phase 5: MCP and agents
+Implement the NitroStack MCP service, specialist tools, bounded agent orchestration, verification, and optional LLM integration.
+
+### Phase 6: Dashboard
+Connect every page to real backend responses and add charts, filters, tables, animations, and error states.
+
+### Phase 7: Testing and evaluation
+Run tests, verify calculations, evaluate ML models, and compare scheduling scenarios on identical workloads.
+
+### Phase 8: Deployment
+Deploy the compatible MCP service to NitroCloud and host the remaining components where supported. Verify the complete application end to end.
+
+### Phase 9: Documentation and presentation
+Generate the final architecture diagram, methodology, results based on actual experiments, limitations, demonstration script, and project report.
+
+## 13. Acceptance Criteria
+
+The project is complete only when:
+- The application can be installed and run using documented commands.
+- The dashboard obtains its information from working backend services.
+- The analytical calculations pass tests.
+- The ML pipeline can train and evaluate on suitable data.
+- Carbon estimates disclose their sources and assumptions.
+- Scheduling recommendations respect constraints.
+- MCP tools are discoverable and callable through a compatible client.
+- Agent responses can be traced to real tool outputs.
+- Errors and missing data are handled correctly.
+- Security-sensitive actions require appropriate authorization.
+- Deployment status is verified rather than assumed.
+- All results and limitations are documented honestly.
+
+## 14. First Action Required
+
+Do not attempt to implement every module simultaneously.
+
+Start by:
+1. Checking the current official NitroStack documentation and compatible SDK version.
+2. Creating the repository and folder structure.
+3. Verifying Node.js, npm, Python, and database prerequisites.
+4. Building a minimal NitroStack MCP server with a health check and one cost-calculation tool.
+5. Testing it locally.
+6. Adding the Python analytics service.
+7. Connecting a basic dashboard.
+8. Proceeding through the roadmap only after each phase passes its tests.
+
+At the end of each phase, summarize the files created, commands run, tests actually passed, known errors, and the exact next steps.
+
+**Final instruction:** Prioritize a functional, maintainable, secure, and genuinely deployable application over visual appearance or excessive agent complexity. Never claim a feature works until it has been implemented and tested.
