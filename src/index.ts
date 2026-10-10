@@ -162,6 +162,17 @@ async function bootstrap() {
           res.status(500).json({ error: e.message });
         }
       });
+
+      // 7. Live 10-Second Telemetry Streaming Feed (Usage Chart, Active Resources, Real-time Loss & Cost)
+      app.get('/api/cloud/live-stream', async (_req: any, res: any) => {
+        try {
+          const telemetryService = DIContainer.getInstance().resolve(CloudTelemetryProviderService) as CloudTelemetryProviderService;
+          const streamData = await telemetryService.getLiveStreamData();
+          res.json(streamData);
+        } catch (e: any) {
+          res.status(500).json({ error: e.message });
+        }
+      });
     }
   }
 }

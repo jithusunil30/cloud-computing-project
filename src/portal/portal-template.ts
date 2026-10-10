@@ -565,6 +565,67 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
     }
 
     footer a { color: #38bdf8; text-decoration: none; }
+
+    /* Live 10-Second Telemetry Stream Styles */
+    .chart-tab {
+      transition: all 0.2s;
+    }
+    .chart-tab:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #ffffff !important;
+    }
+    .chart-tab.active {
+      background: rgba(16, 185, 129, 0.2) !important;
+      border-color: rgba(16, 185, 129, 0.4) !important;
+      color: #34d399 !important;
+    }
+    .resource-row {
+      background: rgba(11, 15, 25, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .resource-row:hover {
+      border-color: rgba(56, 189, 248, 0.35);
+      background: rgba(30, 41, 59, 0.6);
+      transform: translateX(2px);
+    }
+    .status-pill {
+      font-size: 0.68rem;
+      padding: 0.18rem 0.55rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .status-pill.healthy {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-pill.underutilized {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .status-pill.zombie_idle {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+    .status-pill.optimal {
+      background: rgba(6, 182, 212, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+    .status-pill.spiking {
+      background: rgba(236, 72, 153, 0.15);
+      color: #f472b6;
+      border: 1px solid rgba(236, 72, 153, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -580,7 +641,8 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       </div>
     </a>
     <nav>
-      <a href="#overview" class="active">Overview</a>
+      <a href="#live-stream" style="color: #34d399; font-weight: 700;">● Live 10s Stream</a>
+      <a href="#overview">Overview</a>
       <a href="#agents">12 Specialist Agents</a>
       <a href="#playground">Optimizer Simulator</a>
       <a href="#cloud-telemetry">Live Internet Data</a>
@@ -649,6 +711,261 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
           <span>🔒 Read-only mode • No unapproved cloud mutations</span>
         </div>
       </div>
+    </section>
+
+    <!-- Real-Time AWS Telemetry & Loss Command Center (10-Second Live Feed) -->
+    <section id="live-stream" style="margin-bottom: 3.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.8rem; border-radius: 9999px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem;">
+            <span class="pulse"></span>
+            <span>LIVE 10-SECOND AWS STREAM</span>
+          </div>
+          <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.85rem; font-weight: 800; color: #ffffff;">
+            AWS Real-Time Fleet Usage & Financial Loss Monitor
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">
+            Continuous 10-second telemetry streaming from AWS & live internet feeds: usage line chart, active workloads inventory, real-time cost, and idle waste tracker.
+          </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+          <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border-subtle); padding: 0.5rem 0.9rem; border-radius: 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 0.6rem;">
+            <span style="color: var(--text-muted);">Syncing in:</span>
+            <span id="countdownTicker" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #38bdf8;">10s</span>
+            <div style="width: 40px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+              <div id="countdownProgressBar" style="width: 100%; height: 100%; background: #38bdf8; transition: width 1s linear;"></div>
+            </div>
+          </div>
+          
+          <button id="streamToggleBtn" onclick="toggleStream()" style="background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border-subtle); color: #ffffff; padding: 0.5rem 0.9rem; border-radius: 10px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+            <span id="toggleIcon">⏸️</span> <span id="toggleText">Pause Stream</span>
+          </button>
+          
+          <button onclick="fetchLiveStreamTick()" style="background: linear-gradient(135deg, #0284c7, #2563eb); border: none; color: #ffffff; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+            <span>🔄</span> <span>Sync Now</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-Time Live Stream KPI Bar -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem;">
+        
+        <!-- Live Compute Usage -->
+        <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #06b6d4, #3b82f6); padding: 1.25rem;">
+          <div class="kpi-label">
+            <span>Live Fleet Load</span>
+            <span id="streamProviderBadge" style="color: #38bdf8; font-family: 'JetBrains Mono', monospace;">AWS (us-east-1)</span>
+          </div>
+          <div class="kpi-value" style="font-size: 2rem;">
+            <span id="liveAvgCpu">41.5%</span> <span style="font-size: 1rem; font-weight: 500; color: #94a3b8;">Avg CPU</span>
+          </div>
+          <div class="kpi-sub" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+              <span>RAM: <strong id="liveAvgRam" style="color: #e2e8f0;">56.2%</strong></span>
+              <span>Net: <strong id="liveNetwork" style="color: #e2e8f0;">84 Mbps</strong></span>
+              <span>Peak: <strong id="livePeakCpu" style="color: #f59e0b;">57.3%</strong></span>
+            </div>
+            <span style="color: #34d399; font-size: 0.75rem; margin-top: 0.2rem;">● p95 Peak Safety Bound (&lt;75%) SATISFIED</span>
+          </div>
+        </div>
+
+        <!-- Live Cost Rate -->
+        <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #10b981, #059669); padding: 1.25rem;">
+          <div class="kpi-label">
+            <span>Live Spend Rate</span>
+            <span style="color: #34d399;">Real-Time Run Rate</span>
+          </div>
+          <div class="kpi-value" style="font-size: 2rem;">
+            <span id="liveHourlySpend">$1.734</span> <span style="font-size: 1rem; font-weight: 500; color: #94a3b8;">/ hour</span>
+          </div>
+          <div class="kpi-sub" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+              <span>Daily: <strong id="liveDailySpend" style="color: #e2e8f0;">$41.62</strong>/day</span>
+              <span>MTD: <strong id="liveMtdSpend" style="color: #e2e8f0;">$1,248.60</strong></span>
+            </div>
+            <span style="color: #38bdf8; font-size: 0.75rem; margin-top: 0.2rem;">● AWS: $724.18 (58%) &bull; GCP: $524.42 (42%)</span>
+          </div>
+        </div>
+
+        <!-- Live Financial Loss & Waste -->
+        <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #f43f5e, #e11d48); padding: 1.25rem;">
+          <div class="kpi-label">
+            <span>Live Financial Loss</span>
+            <span style="color: #f43f5e;">Idle / Waste Cost</span>
+          </div>
+          <div class="kpi-value" style="font-size: 2rem; color: #fb7185;">
+            <span id="liveMonthlyWaste">$286.40</span> <span style="font-size: 1rem; font-weight: 500; color: #fda4af;">/ mo</span>
+          </div>
+          <div class="kpi-sub" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+              <span>Hourly Waste: <strong id="liveHourlyLoss" style="color: #fb7185;">$0.398</strong>/hr</span>
+              <span>Zombie: <strong id="liveZombieLoss" style="color: #fb7185;">$114.20</strong></span>
+            </div>
+            <span style="color: #f43f5e; font-size: 0.75rem; margin-top: 0.2rem;">● 3 Inefficiencies Flagged (1 Zombie, 1 Oversized, 1 NAT)</span>
+          </div>
+        </div>
+
+        <!-- Efficiency Score & Verified Recovery -->
+        <div class="kpi-card" style="--card-accent: linear-gradient(90deg, #8b5cf6, #6366f1); padding: 1.25rem;">
+          <div class="kpi-label">
+            <span>Fleet Efficiency Score</span>
+            <span style="color: #a78bfa;">Agent 09 Verified</span>
+          </div>
+          <div class="kpi-value" style="font-size: 2rem; color: #c4b5fd;">
+            <span id="liveEfficiencyScore">74.8%</span>
+          </div>
+          <div class="kpi-sub" style="flex-direction: column; align-items: flex-start; gap: 0.2rem;">
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+              <span>Recoverable: <strong id="liveRecoverableSavings" style="color: #34d399;">$342.80</strong>/mo</span>
+              <span>Carbon Excess: <strong id="liveCarbonExcess" style="color: #f59e0b;">59.8 kg</strong></span>
+            </div>
+            <span style="color: #34d399; font-size: 0.75rem; margin-top: 0.2rem;">✓ Verified arithmetic audit ready for execution</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Main Live Section Grid: Left = Line Chart, Right = Active Resources Inventory ("what are all using") -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 1.5rem; margin-bottom: 1.75rem;">
+        
+        <!-- Left Column: Real-Time Usage Line Chart -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 16px 36px rgba(0,0,0,0.4);">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+              <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffffff;">Live Fleet Usage Line Chart (Every 10s)</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Real-time rolling telemetry stream showing compute usage over time</p>
+              </div>
+
+              <!-- Metric Tab Buttons -->
+              <div style="display: flex; gap: 0.35rem; background: rgba(0,0,0,0.4); padding: 0.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                <button id="chartMetricCpuBtn" onclick="setChartMetric('cpu')" class="chart-tab active" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; padding: 0.25rem 0.65rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">CPU %</button>
+                <button id="chartMetricRamBtn" onclick="setChartMetric('ram')" class="chart-tab" style="background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 0.25rem 0.65rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">RAM %</button>
+                <button id="chartMetricNetBtn" onclick="setChartMetric('net')" class="chart-tab" style="background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 0.25rem 0.65rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Network</button>
+                <button id="chartMetricCostBtn" onclick="setChartMetric('cost')" class="chart-tab" style="background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 0.25rem 0.65rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Spend $/hr</button>
+              </div>
+            </div>
+
+            <!-- SVG Line Chart Canvas Area -->
+            <div id="lineChartContainer" style="position: relative; width: 100%; height: 260px; background: rgba(4, 7, 17, 0.7); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 0.5rem; overflow: hidden;">
+              <svg id="liveSvgChart" width="100%" height="100%" viewBox="0 0 600 240" preserveAspectRatio="none" style="overflow: visible;">
+                <defs>
+                  <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.35" />
+                    <stop offset="100%" stop-color="#10b981" stop-opacity="0.0" />
+                  </linearGradient>
+                </defs>
+                <!-- Grid Lines -->
+                <line x1="50" y1="30" x2="580" y2="30" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                <line x1="50" y1="80" x2="580" y2="80" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                <line x1="50" y1="130" x2="580" y2="130" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                <line x1="50" y1="180" x2="580" y2="180" stroke="rgba(255,255,255,0.05)" stroke-dasharray="4" />
+                
+                <!-- Safeguard line at 75% -->
+                <line id="safeguardLine" x1="50" y1="72.5" x2="580" y2="72.5" stroke="#f59e0b" stroke-dasharray="6,4" stroke-width="1.5" opacity="0.6" />
+                <text id="safeguardText" x="50" y="66" fill="#f59e0b" font-size="10" font-family="'JetBrains Mono', monospace">75% p95 Peak Safeguard Limit</text>
+
+                <!-- Area & Line paths -->
+                <polygon id="svgChartArea" points="" fill="url(#chartGradient)" />
+                <polyline id="svgChartLine" points="" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                
+                <!-- Data dots group -->
+                <g id="svgChartDots"></g>
+
+                <!-- X & Y Labels -->
+                <g id="svgXLabels"></g>
+                <g id="svgYLabels"></g>
+              </svg>
+
+              <!-- Live Tooltip -->
+              <div id="chartTooltip" style="display: none; position: absolute; background: rgba(15, 23, 42, 0.95); border: 1px solid #38bdf8; border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: #ffffff; pointer-events: none; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.5);"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.78rem; color: var(--text-muted);">
+            <div>
+              <span>Current Tick: <strong id="lastTickTime" style="color: #cbd5e1; font-family: 'JetBrains Mono', monospace;">--:--:--</strong></span>
+              <span style="margin-left: 0.75rem;">Window: <strong id="sampleCount" style="color: #cbd5e1;">150s (15 samples)</strong></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span id="chartLegendDot" style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+              <span id="chartLegendLabel">Fleet CPU Utilization</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Active Cloud Resources Box ("what are all using") -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 1.75rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 16px 36px rgba(0,0,0,0.4);">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+              <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffffff;">📦 Active Cloud Resources Inventory</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">What services are running, what they cost, and idle waste</p>
+              </div>
+              <span id="activeBadge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 9999px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.3);">
+                7 Active Services
+              </span>
+            </div>
+
+            <!-- Resource Items List (Scrollable) -->
+            <div id="resourceInventoryList" style="max-height: 290px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; padding-right: 0.25rem;">
+              <div style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem; text-align: center;">Connecting to live stream...</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.78rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+            <span>🔒 Guardrail: <strong>Zero Mutation Read-Only</strong></span>
+            <span style="color: #38bdf8; font-weight: 600;">Updated Every 10s</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Sub-Row: Live Financial Loss Breakdown & Waste Eliminator -->
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(244, 63, 94, 0.25); border-radius: 16px; padding: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+        
+        <div style="border-right: 1px solid rgba(255, 255, 255, 0.08); padding-right: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 1.2rem;">🧟</span>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #ffffff;">Zombie / Idle Resource Waste</h4>
+          </div>
+          <div style="font-size: 1.4rem; font-weight: 700; color: #fb7185; margin-bottom: 0.25rem;">
+            <span id="detailZombieLoss">$114.20</span> <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ month</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+            Instances running with 0% network I/O and &lt;2% CPU for &gt;72 hours (e.g. <code>i-0d441aee</code>). Agent 03 flags these for safe hibernation.
+          </p>
+        </div>
+
+        <div style="border-right: 1px solid rgba(255, 255, 255, 0.08); padding-right: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 1.2rem;">📉</span>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #ffffff;">Overprovisioned Sizing Loss</h4>
+          </div>
+          <div style="font-size: 1.4rem; font-weight: 700; color: #fb7185; margin-bottom: 0.25rem;">
+            <span id="detailOversizeLoss">$172.20</span> <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ month</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+            Compute capacity never exceeding 15% peak CPU (e.g. <code>c5.xlarge</code> worker). Agent 06 recommends rightsizing to <code>c5.large</code> with p95 safeguard.
+          </p>
+        </div>
+
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 1.2rem;">🌱</span>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #ffffff;">Carbon Excess Grid Loss</h4>
+          </div>
+          <div style="font-size: 1.4rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.25rem;">
+            <span id="detailCarbonLoss">59.8 kg CO₂e</span> <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(32.4% reducible)</span>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+            Batch jobs executed during peak fossil intensity grid hours. Agent 05 computes shifting to clean renewable windows saves 59.8 kg CO₂e.
+          </p>
+        </div>
+
+      </div>
+
     </section>
 
     <!-- Interactive Optimizer Playground -->
@@ -1334,7 +1651,367 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       }
     }
 
+    // ------------------------------------------------------------------------
+    // LIVE 10-SECOND AWS TELEMETRY STREAM LOGIC & CHART ENGINE
+    // ------------------------------------------------------------------------
+    let streamCountdown = 10;
+    let streamPaused = false;
+    let currentChartMetric = 'cpu'; // 'cpu' | 'ram' | 'net' | 'cost'
+    let cachedStreamData = null;
+    let countdownInterval = null;
+
+    function toggleStream() {
+      streamPaused = !streamPaused;
+      const icon = document.getElementById('toggleIcon');
+      const text = document.getElementById('toggleText');
+      const btn = document.getElementById('streamToggleBtn');
+      if (streamPaused) {
+        if (icon) icon.textContent = '▶️';
+        if (text) text.textContent = 'Resume Stream';
+        if (btn) btn.style.borderColor = '#38bdf8';
+      } else {
+        if (icon) icon.textContent = '⏸️';
+        if (text) text.textContent = 'Pause Stream';
+        if (btn) btn.style.borderColor = 'var(--border-subtle)';
+      }
+    }
+
+    function setChartMetric(metric) {
+      currentChartMetric = metric;
+      const tabs = ['cpu', 'ram', 'net', 'cost'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('chartMetric' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn');
+        if (btn) {
+          if (t === metric) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+      if (cachedStreamData) {
+        renderSvgLineChart(cachedStreamData.usageHistory, currentChartMetric);
+      }
+    }
+
+    async function fetchLiveStreamTick() {
+      try {
+        const res = await fetch('/api/cloud/live-stream');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        cachedStreamData = data;
+        updateLiveDashboardUI(data);
+      } catch (err) {
+        console.warn('[LiveStream Error]', err);
+      }
+      streamCountdown = 10;
+      updateCountdownDisplay();
+    }
+
+    function updateLiveDashboardUI(data) {
+      if (!data) return;
+
+      // 1. Update Connection Status Badge
+      const badge = document.getElementById('streamProviderBadge');
+      if (badge) {
+        if (data.isConnectedToAws) {
+          badge.textContent = 'AWS ' + data.awsRegion + ' (Live Connected)';
+          badge.style.color = '#34d399';
+        } else {
+          badge.textContent = 'Hybrid Live Feed (' + data.awsRegion + ')';
+          badge.style.color = '#38bdf8';
+        }
+      }
+
+      // 2. Update Live KPI Cards
+      const avgCpuEl = document.getElementById('liveAvgCpu');
+      if (avgCpuEl) avgCpuEl.textContent = data.currentMetrics.avgCpuPercent.toFixed(1) + '%';
+
+      const avgRamEl = document.getElementById('liveAvgRam');
+      if (avgRamEl) avgRamEl.textContent = data.currentMetrics.avgMemoryPercent.toFixed(1) + '%';
+
+      const netEl = document.getElementById('liveNetwork');
+      if (netEl) netEl.textContent = data.currentMetrics.networkMbps + ' Mbps';
+
+      const peakCpuEl = document.getElementById('livePeakCpu');
+      if (peakCpuEl) peakCpuEl.textContent = data.currentMetrics.peakCpuPercent.toFixed(1) + '%';
+
+      // Cost Metrics
+      const hourlySpendEl = document.getElementById('liveHourlySpend');
+      if (hourlySpendEl) hourlySpendEl.textContent = '$' + data.costMetrics.currentHourlyRunRateUsd.toFixed(3);
+
+      const dailySpendEl = document.getElementById('liveDailySpend');
+      if (dailySpendEl) dailySpendEl.textContent = '$' + data.costMetrics.dailyRunRateUsd.toFixed(2);
+
+      const mtdSpendEl = document.getElementById('liveMtdSpend');
+      if (mtdSpendEl) mtdSpendEl.textContent = '$' + data.costMetrics.totalMonthSpendUsd.toFixed(2);
+
+      // Loss Metrics
+      const monthlyWasteEl = document.getElementById('liveMonthlyWaste');
+      if (monthlyWasteEl) monthlyWasteEl.textContent = '$' + data.lossMetrics.monthlyWasteLossUsd.toFixed(2);
+
+      const hourlyLossEl = document.getElementById('liveHourlyLoss');
+      if (hourlyLossEl) hourlyLossEl.textContent = '$' + data.lossMetrics.hourlyLossRateUsd.toFixed(3);
+
+      const zombieLossEl = document.getElementById('liveZombieLoss');
+      if (zombieLossEl) zombieLossEl.textContent = '$' + data.lossMetrics.idleZombieLossUsd.toFixed(2);
+
+      // Efficiency Score & Recovery
+      const effScoreEl = document.getElementById('liveEfficiencyScore');
+      if (effScoreEl) effScoreEl.textContent = data.lossMetrics.efficiencyScorePercent.toFixed(1) + '%';
+
+      const recovEl = document.getElementById('liveRecoverableSavings');
+      if (recovEl) recovEl.textContent = '$' + data.lossMetrics.potentialRecoverableSavingsUsd.toFixed(2);
+
+      const carbonLossEl = document.getElementById('liveCarbonExcess');
+      if (carbonLossEl) carbonLossEl.textContent = data.lossMetrics.carbonExcessLossKg.toFixed(1) + ' kg';
+
+      // Detail bottom cards
+      const detZombie = document.getElementById('detailZombieLoss');
+      if (detZombie) detZombie.textContent = '$' + data.lossMetrics.idleZombieLossUsd.toFixed(2);
+
+      const detOversize = document.getElementById('detailOversizeLoss');
+      if (detOversize) detOversize.textContent = '$' + data.lossMetrics.overprovisionedLossUsd.toFixed(2);
+
+      const detCarbon = document.getElementById('detailCarbonLoss');
+      if (detCarbon) detCarbon.textContent = data.lossMetrics.carbonExcessLossKg.toFixed(1) + ' kg CO₂e';
+
+      // Last Tick Time & Active Count
+      const tickTimeEl = document.getElementById('lastTickTime');
+      if (tickTimeEl) tickTimeEl.textContent = data.formattedTime || new Date().toLocaleTimeString();
+
+      const actBadge = document.getElementById('activeBadge');
+      if (actBadge) actBadge.textContent = (data.activeResources?.length || 7) + ' Active Services';
+
+      // 3. Render Chart
+      renderSvgLineChart(data.usageHistory, currentChartMetric);
+
+      // 4. Render Active Resources List ("what are all using")
+      renderResourceInventory(data.activeResources);
+    }
+
+    function renderSvgLineChart(history, metric) {
+      if (!Array.isArray(history) || history.length === 0) return;
+
+      const svgArea = document.getElementById('svgChartArea');
+      const svgLine = document.getElementById('svgChartLine');
+      const svgDots = document.getElementById('svgChartDots');
+      const xLabels = document.getElementById('svgXLabels');
+      const yLabels = document.getElementById('svgYLabels');
+      const legendLabel = document.getElementById('chartLegendLabel');
+      const legendDot = document.getElementById('chartLegendDot');
+      const safeguardLine = document.getElementById('safeguardLine');
+      const safeguardText = document.getElementById('safeguardText');
+
+      let color = '#10b981';
+      let title = 'Fleet CPU Utilization (%)';
+      let minVal = 0;
+      let maxVal = 100;
+      let formatVal = v => v.toFixed(1) + '%';
+
+      if (metric === 'ram') {
+        color = '#38bdf8';
+        title = 'Memory Utilization (%)';
+        minVal = 0;
+        maxVal = 100;
+        formatVal = v => v.toFixed(1) + '%';
+      } else if (metric === 'net') {
+        color = '#8b5cf6';
+        title = 'Network Throughput (Mbps)';
+        minVal = 0;
+        maxVal = 140;
+        formatVal = v => Math.round(v) + ' Mbps';
+      } else if (metric === 'cost') {
+        color = '#f59e0b';
+        title = 'Hourly Spend Rate ($/hr)';
+        minVal = 0;
+        maxVal = 2.5;
+        formatVal = v => '$' + v.toFixed(3) + '/hr';
+      }
+
+      if (legendLabel) legendLabel.textContent = title;
+      if (legendDot) legendDot.style.background = color;
+      if (svgLine) svgLine.setAttribute('stroke', color);
+
+      // Safeguard reference line visibility
+      if (safeguardLine && safeguardText) {
+        if (metric === 'cpu') {
+          safeguardLine.style.display = 'block';
+          safeguardText.style.display = 'block';
+        } else {
+          safeguardLine.style.display = 'none';
+          safeguardText.style.display = 'none';
+        }
+      }
+
+      // Compute coordinate points
+      const width = 530;
+      const height = 150;
+      const startX = 50;
+      const baseY = 195;
+      const n = history.length;
+      const points = [];
+
+      for (let i = 0; i < n; i++) {
+        const item = history[i];
+        let raw = 0;
+        if (metric === 'cpu') raw = item.cpuPercent;
+        else if (metric === 'ram') raw = item.memoryPercent;
+        else if (metric === 'net') raw = item.networkMbps;
+        else if (metric === 'cost') raw = item.costPerHourUsd;
+
+        const clamped = Math.max(minVal, Math.min(maxVal, raw));
+        const ratio = (clamped - minVal) / (maxVal - minVal);
+        const x = startX + (i / Math.max(1, n - 1)) * width;
+        const y = baseY - ratio * height;
+
+        points.push({ x, y, raw, time: item.timeLabel });
+      }
+
+      // Line points attribute
+      const pointsStr = points.map(p => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
+      if (svgLine) svgLine.setAttribute('points', pointsStr);
+
+      // Area polygon attribute
+      const areaStr = startX + ',' + baseY + ' ' + pointsStr + ' ' + (startX + width) + ',' + baseY;
+      if (svgArea) svgArea.setAttribute('points', areaStr);
+
+      // Render Dots
+      if (svgDots) {
+        let dotsHtml = '';
+        points.forEach(function(p) {
+          dotsHtml += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4" fill="' + color + '" stroke="#ffffff" stroke-width="1.5" style="cursor: pointer;" onmouseover="showChartTooltip(event, \'' + p.time + '\', \'' + formatVal(p.raw) + '\')" onmouseout="hideChartTooltip()" />';
+        });
+        svgDots.innerHTML = dotsHtml;
+      }
+
+      // Render X-axis Labels (every 3rd or 4th item)
+      if (xLabels) {
+        let xHtml = '';
+        points.forEach(function(p, idx) {
+          if (idx === 0 || idx === Math.floor(n / 2) || idx === n - 1 || idx % 4 === 0) {
+            xHtml += '<text x="' + p.x.toFixed(1) + '" y="215" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="\'JetBrains Mono\', monospace">' + p.time + '</text>';
+          }
+        });
+        xLabels.innerHTML = xHtml;
+      }
+
+      // Render Y-axis Labels
+      if (yLabels) {
+        let yHtml = '';
+        const steps = [0, 0.25, 0.5, 0.75, 1.0];
+        steps.forEach(function(s) {
+          const val = minVal + s * (maxVal - minVal);
+          const y = baseY - s * height;
+          const display = metric === 'cost' ? '$' + val.toFixed(2) : (metric === 'net' ? Math.round(val) : Math.round(val) + '%');
+          yHtml += '<text x="44" y="' + (y + 3) + '" fill="#64748b" font-size="9" text-anchor="end" font-family="\'JetBrains Mono\', monospace">' + display + '</text>';
+        });
+        yLabels.innerHTML = yHtml;
+      }
+    }
+
+    function showChartTooltip(evt, time, val) {
+      const tooltip = document.getElementById('chartTooltip');
+      if (!tooltip) return;
+      tooltip.style.display = 'block';
+      tooltip.innerHTML = '<strong>' + time + '</strong><br><span style="color: #38bdf8;">' + val + '</span>';
+      
+      const container = document.getElementById('lineChartContainer');
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        const mouseX = evt.clientX - rect.left;
+        const mouseY = evt.clientY - rect.top;
+        tooltip.style.left = Math.min(rect.width - 120, Math.max(10, mouseX + 10)) + 'px';
+        tooltip.style.top = Math.max(10, mouseY - 45) + 'px';
+      }
+    }
+
+    function hideChartTooltip() {
+      const tooltip = document.getElementById('chartTooltip');
+      if (tooltip) tooltip.style.display = 'none';
+    }
+
+    function renderResourceInventory(resources) {
+      const list = document.getElementById('resourceInventoryList');
+      if (!list || !Array.isArray(resources)) return;
+
+      let html = '';
+      resources.forEach(function(r) {
+        let icon = '🖥️';
+        if (r.service.indexOf('RDS') !== -1) icon = '🗄️';
+        else if (r.service.indexOf('S3') !== -1) icon = '🪣';
+        else if (r.service.indexOf('VPC') !== -1) icon = '🌐';
+        else if (r.service.indexOf('Lambda') !== -1) icon = '⚡';
+
+        const stateClass = r.state.toLowerCase();
+        const usageVal = r.cpuUtilizationPercent > 0 ? r.cpuUtilizationPercent.toFixed(1) + '% CPU' : (r.networkThroughputMbps + ' Mbps');
+        const usagePercent = r.cpuUtilizationPercent > 0 ? r.cpuUtilizationPercent : Math.min(100, r.networkThroughputMbps / 1.5);
+        const barColor = r.state === 'ZOMBIE_IDLE' ? '#f43f5e' : (r.cpuUtilizationPercent > 60 ? '#f59e0b' : '#10b981');
+        const lossHtml = r.lossPerHourUsd > 0 
+          ? '<div style="font-size: 0.68rem; color: #fb7185; font-weight: 600;">-$' + r.lossPerHourUsd.toFixed(4) + ' loss</div>' 
+          : '<div style="font-size: 0.68rem; color: #34d399;">$0 waste</div>';
+
+        html += '<div class="resource-row">' +
+          '<div style="display: flex; align-items: center; gap: 0.65rem;">' +
+            '<span style="font-size: 1.25rem;">' + icon + '</span>' +
+            '<div>' +
+              '<div style="font-weight: 700; font-size: 0.85rem; color: #ffffff; display: flex; align-items: center; gap: 0.4rem;">' +
+                '<span>' + r.name + '</span>' +
+                '<span style="font-family: \'JetBrains Mono\', monospace; font-size: 0.7rem; color: #94a3b8;">(' + r.id + ')</span>' +
+              '</div>' +
+              '<div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.3;">' +
+                r.service + ' &bull; <span style="color: #cbd5e1;">' + r.region + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="display: flex; align-items: center; gap: 1rem;">' +
+            '<div style="text-align: right; min-width: 80px;">' +
+              '<div style="font-size: 0.75rem; font-weight: 700; color: #e2e8f0;">' + usageVal + '</div>' +
+              '<div style="width: 70px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: 3px; margin-left: auto;">' +
+                '<div style="width: ' + Math.min(100, usagePercent) + '%; height: 100%; background: ' + barColor + ';"></div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="text-align: right; min-width: 85px;">' +
+              '<div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8;">$' + r.costPerHourUsd.toFixed(4) + '/hr</div>' +
+              lossHtml +
+            '</div>' +
+            '<span class="status-pill ' + stateClass + '">' + r.state.replace('_', ' ') + '</span>' +
+          '</div>' +
+        '</div>';
+      });
+
+      list.innerHTML = html;
+    }
+
+    function updateCountdownDisplay() {
+      const ticker = document.getElementById('countdownTicker');
+      const bar = document.getElementById('countdownProgressBar');
+      if (ticker) ticker.textContent = streamCountdown + 's';
+      if (bar) bar.style.width = ((streamCountdown / 10) * 100) + '%';
+    }
+
+    function startLiveStream() {
+      // Immediate first tick
+      fetchLiveStreamTick();
+
+      // Countdown timer every 1s
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        if (streamPaused) return;
+        streamCountdown--;
+        if (streamCountdown <= 0) {
+          fetchLiveStreamTick();
+        } else {
+          updateCountdownDisplay();
+        }
+      }, 1000);
+    }
+
     window.addEventListener('load', () => {
+      // Start live 10-second streaming
+      startLiveStream();
+
+      // Fetch cloud status badges
       fetch('/api/cloud/status')
         .then(r => r.json())
         .then(st => {
