@@ -360,6 +360,67 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       transform: translateY(-1px);
     }
 
+    .predefined-prompts-container {
+      margin-top: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .predefined-prompts-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.65rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .predefined-prompts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 0.6rem;
+    }
+
+    .prompt-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 10px;
+      padding: 0.6rem 0.85rem;
+      color: #cbd5e1;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .prompt-chip:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.5);
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+    }
+
+    .prompt-chip:active {
+      transform: translateY(0);
+    }
+
+    .prompt-chip-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .prompt-chip-text {
+      line-height: 1.35;
+    }
+
     .console-output {
       background: #040711;
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -566,7 +627,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
 
     footer a { color: #38bdf8; text-decoration: none; }
 
-    /* Live 10-Second Telemetry Stream Styles */
+    /* Live 5-Second Telemetry Stream Styles */
     .chart-tab {
       transition: all 0.2s;
     }
@@ -641,7 +702,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       </div>
     </a>
     <nav>
-      <a href="#live-stream" style="color: #34d399; font-weight: 700;">● Live 10s Stream</a>
+      <a href="#live-stream" style="color: #34d399; font-weight: 700;">● Live 5s Stream</a>
       <a href="#overview">Overview</a>
       <a href="#agents">12 Specialist Agents</a>
       <a href="#playground">Optimizer Simulator</a>
@@ -713,26 +774,26 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       </div>
     </section>
 
-    <!-- Real-Time AWS Telemetry & Loss Command Center (10-Second Live Feed) -->
+    <!-- Real-Time AWS Telemetry & Loss Command Center (5-Second Live Feed) -->
     <section id="live-stream" style="margin-bottom: 3.5rem;">
       <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
         <div>
           <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.8rem; border-radius: 9999px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem;">
             <span class="pulse"></span>
-            <span>LIVE 10-SECOND AWS STREAM</span>
+            <span>LIVE 5-SECOND AWS STREAM</span>
           </div>
           <h2 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.85rem; font-weight: 800; color: #ffffff;">
             AWS Real-Time Fleet Usage & Financial Loss Monitor
           </h2>
           <p style="color: var(--text-muted); font-size: 0.95rem;">
-            Continuous 10-second telemetry streaming from AWS & live internet feeds: usage line chart, active workloads inventory, real-time cost, and idle waste tracker.
+            Continuous 5-second telemetry streaming from AWS & live internet feeds: usage line chart, active workloads inventory, real-time cost, and idle waste tracker.
           </p>
         </div>
 
         <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
           <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border-subtle); padding: 0.5rem 0.9rem; border-radius: 12px; font-size: 0.85rem; display: flex; align-items: center; gap: 0.6rem;">
             <span style="color: var(--text-muted);">Syncing in:</span>
-            <span id="countdownTicker" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #38bdf8;">10s</span>
+            <span id="countdownTicker" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #38bdf8;">5s</span>
             <div style="width: 40px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
               <div id="countdownProgressBar" style="width: 100%; height: 100%; background: #38bdf8; transition: width 1s linear;"></div>
             </div>
@@ -834,7 +895,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
               <div>
-                <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffffff;">Live Fleet Usage Line Chart (Every 10s)</h3>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffffff;">Live Fleet Usage Line Chart (Every 5s)</h3>
                 <p style="font-size: 0.8rem; color: var(--text-muted);">Real-time rolling telemetry stream showing compute usage over time</p>
               </div>
 
@@ -916,7 +977,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
 
           <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.78rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
             <span>🔒 Guardrail: <strong>Zero Mutation Read-Only</strong></span>
-            <span style="color: #38bdf8; font-weight: 600;">Updated Every 10s</span>
+            <span style="color: #38bdf8; font-weight: 600;">Updated Every 5s</span>
           </div>
         </div>
 
@@ -988,6 +1049,50 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
             <span>Execute Agents</span>
             <span>→</span>
           </button>
+        </div>
+
+        <!-- Pre-Defined Multi-Agent Prompts Launcher -->
+        <div class="predefined-prompts-container">
+          <div class="predefined-prompts-title">
+            <span style="display: flex; align-items: center; gap: 6px;">
+              <span>💬</span> Pre-Defined Multi-Agent Prompts (Click Any to Run):
+            </span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: none; letter-spacing: normal;">Click to populate &amp; launch</span>
+          </div>
+          <div class="predefined-prompts-grid">
+            <button class="prompt-chip" type="button" onclick="setPredefinedPrompt('Audit idle EC2 instances and reduce compute emissions under $500 budget')">
+              <span class="prompt-chip-icon">⚡</span>
+              <span class="prompt-chip-text">Audit idle EC2 instances and reduce compute emissions under $500 budget</span>
+            </button>
+            <button class="prompt-chip" type="button" onclick="setPredefinedPrompt('Forecast multi-cloud spend for next 30 days with 95% confidence intervals')">
+              <span class="prompt-chip-icon">📈</span>
+              <span class="prompt-chip-text">Forecast multi-cloud spend for next 30 days with 95% confidence intervals</span>
+            </button>
+            <button class="prompt-chip" type="button" onclick="setPredefinedPrompt('Detect Isolation Forest multivariate anomalies and locate zombie instances')">
+              <span class="prompt-chip-icon">🚨</span>
+              <span class="prompt-chip-text">Detect Isolation Forest multivariate anomalies and locate zombie instances</span>
+            </button>
+            <button class="prompt-chip" type="button" onclick="setPredefinedPrompt('Shift Kubernetes batch ETL jobs to Oregon grid lowest carbon hours')">
+              <span class="prompt-chip-icon">🌱</span>
+              <span class="prompt-chip-text">Shift Kubernetes batch ETL jobs to Oregon grid lowest carbon hours</span>
+            </button>
+            <button class="prompt-chip" type="button" onclick="setPredefinedPrompt('Rightsize oversized c5.xlarge workers with p95 peak CPU safeguards')">
+              <span class="prompt-chip-icon">⚙️</span>
+              <span class="prompt-chip-text">Rightsize oversized c5.xlarge workers with p95 peak CPU safeguards</span>
+            </button>
+            <button class="prompt-chip" type="button" onclick="setPredefinedPrompt('Generate Pareto optimal trade-off frontier between cost, carbon, and latency')">
+              <span class="prompt-chip-icon">⚖️</span>
+              <span class="prompt-chip-text">Generate Pareto optimal trade-off frontier between cost, carbon, and latency</span>
+            </button>
+            <button class="prompt-chip" type="button" onclick="setPredefinedPrompt('Independently verify recommendation arithmetic and guardrail compliance')">
+              <span class="prompt-chip-icon">🛡️</span>
+              <span class="prompt-chip-text">Independently verify recommendation arithmetic and guardrail compliance</span>
+            </button>
+            <button class="prompt-chip" type="button" onclick="setPredefinedPrompt('Synthesize executive briefing report with calculation provenance')">
+              <span class="prompt-chip-icon">📝</span>
+              <span class="prompt-chip-text">Synthesize executive briefing report with calculation provenance</span>
+            </button>
+          </div>
         </div>
 
         <div id="outputConsole" class="console-output">Ready. Click any optimization scenario above or enter a prompt to view live agent traces and verified calculations...</div>
@@ -1651,10 +1756,18 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       }
     }
 
+    function setPredefinedPrompt(text) {
+      const input = document.getElementById('customPrompt');
+      if (input) {
+        input.value = text;
+      }
+      runCustomPrompt();
+    }
+
     // ------------------------------------------------------------------------
-    // LIVE 10-SECOND AWS TELEMETRY STREAM LOGIC & CHART ENGINE
+    // LIVE 5-SECOND AWS TELEMETRY STREAM LOGIC & CHART ENGINE
     // ------------------------------------------------------------------------
-    let streamCountdown = 10;
+    let streamCountdown = 5;
     let streamPaused = false;
     let currentChartMetric = 'cpu'; // 'cpu' | 'ram' | 'net' | 'cost'
     let cachedStreamData = null;
@@ -1704,7 +1817,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       } catch (err) {
         console.warn('[LiveStream Error]', err);
       }
-      streamCountdown = 10;
+      streamCountdown = 5;
       updateCountdownDisplay();
     }
 
@@ -1712,8 +1825,8 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       const now = new Date();
       const history = [];
       for (let i = 12; i >= 0; i--) {
-        const d = new Date(now.getTime() - i * 10000);
-        const sin = Math.sin((d.getTime() / 10000) * 0.4);
+        const d = new Date(now.getTime() - i * 5000);
+        const sin = Math.sin((d.getTime() / 5000) * 0.4);
         history.push({
           timeLabel: d.toLocaleTimeString('en-US', { hour12: false }),
           cpuPercent: Math.round((42 + sin * 12) * 10) / 10,
@@ -2051,7 +2164,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       const ticker = document.getElementById('countdownTicker');
       const bar = document.getElementById('countdownProgressBar');
       if (ticker) ticker.textContent = streamCountdown + 's';
-      if (bar) bar.style.width = ((streamCountdown / 10) * 100) + '%';
+      if (bar) bar.style.width = ((streamCountdown / 5) * 100) + '%';
     }
 
     function startLiveStream() {
@@ -2077,6 +2190,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
     // Explicitly bind all interactive handler functions to window so buttons never fail
     window.runScenario = runScenario;
     window.runCustomPrompt = runCustomPrompt;
+    window.setPredefinedPrompt = setPredefinedPrompt;
     window.copyMcpConfig = copyMcpConfig;
     window.fetchLiveTelemetry = fetchLiveTelemetry;
     window.toggleStream = toggleStream;
@@ -2084,7 +2198,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
     window.fetchLiveStreamTick = fetchLiveStreamTick;
 
     window.addEventListener('load', () => {
-      // Start live 10-second streaming
+      // Start live 5-second streaming
       startLiveStream();
 
       // Fetch cloud status badges

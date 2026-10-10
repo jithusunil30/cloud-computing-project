@@ -482,10 +482,10 @@ export class CloudTelemetryProviderService {
 
     // Populate historical buffer if empty so chart immediately renders rich data
     if (this.historyBuffer.length === 0) {
-      for (let i = 12; i >= 1; i--) {
-        const pastDate = new Date(now.getTime() - i * 10000);
+      for (let i = 16; i >= 1; i--) {
+        const pastDate = new Date(now.getTime() - i * 5000);
         const pastLabel = pastDate.toLocaleTimeString('en-US', { hour12: false });
-        const baseSin = Math.sin((pastDate.getTime() / 10000) * 0.4);
+        const baseSin = Math.sin((pastDate.getTime() / 5000) * 0.4);
         const pastCpu = Math.max(18, Math.min(65, Math.round((38 + baseSin * 14 + (Math.random() * 6 - 3)) * 10) / 10));
         const pastMem = Math.max(40, Math.min(75, Math.round((54 + baseSin * 8 + (Math.random() * 4 - 2)) * 10) / 10));
         const pastNet = Math.max(20, Math.round(75 + baseSin * 25 + (Math.random() * 10 - 5)));
@@ -501,14 +501,14 @@ export class CloudTelemetryProviderService {
     }
 
     // Dynamic wave variation for the current tick
-    const wave = Math.sin((now.getTime() / 10000) * 0.4);
+    const wave = Math.sin((now.getTime() / 5000) * 0.4);
     const jitterCpu = (Math.random() * 5 - 2.5);
     const curCpu = Math.max(15, Math.min(72, Math.round((41.5 + wave * 12 + jitterCpu) * 10) / 10));
     const curMem = Math.max(38, Math.min(78, Math.round((56.2 + wave * 6 + (Math.random() * 3 - 1.5)) * 10) / 10));
     const curNet = Math.max(15, Math.round(84 + wave * 22 + (Math.random() * 12 - 6)));
     const curHourlyCost = Math.round((1.734 + wave * 0.06 + (Math.random() * 0.02 - 0.01)) * 1000) / 1000;
 
-    // Append new tick and limit buffer to last 15 ticks (150 seconds of history)
+    // Append new tick and limit buffer to last 20 ticks (100 seconds of history at 5s intervals)
     this.historyBuffer.push({
       timeLabel: formattedTime,
       cpuPercent: curCpu,
@@ -516,7 +516,7 @@ export class CloudTelemetryProviderService {
       networkMbps: curNet,
       costPerHourUsd: curHourlyCost,
     });
-    if (this.historyBuffer.length > 15) {
+    if (this.historyBuffer.length > 20) {
       this.historyBuffer.shift();
     }
 
@@ -638,7 +638,7 @@ export class CloudTelemetryProviderService {
       isConnectedToAws,
       awsRegion: conn.aws.region || 'us-east-1',
       authMethod: conn.aws.authMethod,
-      refreshIntervalSec: 10,
+      refreshIntervalSec: 5,
       currentMetrics: {
         avgCpuPercent: curCpu,
         peakCpuPercent: Math.round((curCpu * 1.38) * 10) / 10,

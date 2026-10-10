@@ -136,7 +136,7 @@ const AGENTS_LIST: AgentCard[] = [
   },
 ];
 
-export default function EcoFinOpsDashboard() {
+export default function EcoFinOpsDashboard({ data: initialData }: { data?: any } = {}) {
   const { isReady, getToolOutput } = useWidgetSDK();
   const hostTheme = useTheme();
 
@@ -146,7 +146,7 @@ export default function EcoFinOpsDashboard() {
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const [executionResult, setExecutionResult] = useState<any>(null);
 
-  const toolData = getToolOutput<any>();
+  const toolData = getToolOutput<any>() || initialData;
 
   // Determine current active report data
   const data = useMemo(() => {
