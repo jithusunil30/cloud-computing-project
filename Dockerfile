@@ -38,6 +38,7 @@ RUN npm run build
 
 # Production configuration
 ENV NODE_ENV=production
+ENV HOST=0.0.0.0
 ENV PORT=3000
 ENV PYTHON_PATH=/opt/venv/bin/python
 

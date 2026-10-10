@@ -17,9 +17,12 @@ import { AppModule } from './app.module.js';
  * Bootstrap the application
  */
 async function bootstrap() {
+  const host = process.env.HOST || '0.0.0.0';
+  const port = parseInt(process.env.PORT || '3000', 10);
+
   // Create and start the MCP server
   const server = await McpApplicationFactory.create(AppModule);
-  await server.start();
+  await server.start({ host, port });
 }
 
 // Start the application

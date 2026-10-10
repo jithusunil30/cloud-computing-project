@@ -8,6 +8,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3000
-    healthCheckPath: /sse
+      - key: HOST
+        value: 0.0.0.0
+    healthCheckPath: /mcp/health
