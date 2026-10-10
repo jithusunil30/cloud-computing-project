@@ -13,6 +13,7 @@ import { McpApplicationFactory, DIContainer } from '@nitrostack/core';
 import { AppModule } from './app.module.js';
 import { renderEcoFinOpsPortalHtml } from './portal/portal-template.js';
 import { SupervisorOrchestrationAgent } from './modules/agents/agent-10-supervisor.service.js';
+import { CloudTelemetryProviderService } from './modules/cloud/cloud-telemetry.service.js';
 
 /**
  * Bootstrap the application
@@ -138,6 +139,27 @@ async function bootstrap() {
         } catch (error: any) {
           console.error('[WebPortal API Error]', error);
           res.status(500).json({ error: error.message });
+        }
+      });
+
+      // 5. Cloud Telemetry Live Connection Status
+      app.get('/api/cloud/status', (_req: any, res: any) => {
+        try {
+          const telemetryService = DIContainer.getInstance().resolve(CloudTelemetryProviderService) as CloudTelemetryProviderService;
+          res.json(telemetryService.getConnectionStatus());
+        } catch (e: any) {
+          res.status(500).json({ error: e.message });
+        }
+      });
+
+      // 6. Live Telemetry Data Fetch (Live Internet Feeds + Cloud APIs)
+      app.get('/api/cloud/telemetry', async (_req: any, res: any) => {
+        try {
+          const telemetryService = DIContainer.getInstance().resolve(CloudTelemetryProviderService) as CloudTelemetryProviderService;
+          const snapshot = await telemetryService.getLiveTelemetrySnapshot();
+          res.json(snapshot);
+        } catch (e: any) {
+          res.status(500).json({ error: e.message });
         }
       });
     }

@@ -17,11 +17,14 @@ import { AgentsResources } from './agents.resources.js';
 import { FinopsModule } from '../finops/finops.module.js';
 import { OptimizationModule } from '../optimization/optimization.module.js';
 
+import { CloudTelemetryProviderService } from '../cloud/cloud-telemetry.service.js';
+
 @Module({
   name: 'agents',
   description: 'EcoFinOps AI 12-Agent Multi-Agent Orchestration & Analytics Module',
   imports: [FinopsModule, OptimizationModule],
   providers: [
+    CloudTelemetryProviderService,
     PythonBridgeService,
     FinopsAnalystAgent,
     CostForecastingAgent,
@@ -39,6 +42,7 @@ import { OptimizationModule } from '../optimization/optimization.module.js';
     AgentsResources,
   ],
   exports: [
+    CloudTelemetryProviderService,
     PythonBridgeService,
     FinopsAnalystAgent,
     CostForecastingAgent,
