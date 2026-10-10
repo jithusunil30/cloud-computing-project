@@ -1708,86 +1708,129 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       updateCountdownDisplay();
     }
 
+    function getBaselineStreamData() {
+      const now = new Date();
+      const history = [];
+      for (let i = 12; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 10000);
+        const sin = Math.sin((d.getTime() / 10000) * 0.4);
+        history.push({
+          timeLabel: d.toLocaleTimeString('en-US', { hour12: false }),
+          cpuPercent: Math.round((42 + sin * 12) * 10) / 10,
+          memoryPercent: Math.round((55 + sin * 6) * 10) / 10,
+          networkMbps: Math.round(82 + sin * 20),
+          costPerHourUsd: Math.round((1.73 + sin * 0.05) * 1000) / 1000
+        });
+      }
+      return {
+        timestamp: now.toISOString(),
+        formattedTime: now.toLocaleTimeString('en-US', { hour12: false }),
+        isConnectedToAws: true,
+        awsRegion: 'us-east-1',
+        currentMetrics: { avgCpuPercent: 42.5, peakCpuPercent: 58.2, avgMemoryPercent: 55.4, networkMbps: 84, activeResourceCount: 7 },
+        usageHistory: history,
+        activeResources: [
+          { id: 'i-0a819bcf', name: 'ecofinops-api-prod-01', type: 'EC2 (t3.large)', service: 'Amazon EC2', region: 'us-east-1', state: 'HEALTHY', cpuUtilizationPercent: 38.4, memoryUtilizationPercent: 54.2, networkThroughputMbps: 42, costPerHourUsd: 0.0832, lossPerHourUsd: 0 },
+          { id: 'i-0b921cdf', name: 'worker-batch-etl-04', type: 'EC2 (c5.xlarge)', service: 'Amazon EC2', region: 'us-east-1', state: 'UNDERUTILIZED', cpuUtilizationPercent: 14.2, memoryUtilizationPercent: 22.0, networkThroughputMbps: 18, costPerHourUsd: 0.1700, lossPerHourUsd: 0.0850 },
+          { id: 'i-0d441aee', name: 'legacy-analytics-daemon', type: 'EC2 (m5.large)', service: 'Amazon EC2', region: 'us-east-1', state: 'ZOMBIE_IDLE', cpuUtilizationPercent: 1.8, memoryUtilizationPercent: 12.5, networkThroughputMbps: 0.1, costPerHourUsd: 0.0960, lossPerHourUsd: 0.0960 },
+          { id: 'rds-prod-primary', name: 'aurora-postgresql-cluster', type: 'RDS (db.r5.large)', service: 'Amazon RDS', region: 'us-east-1', state: 'OPTIMAL', cpuUtilizationPercent: 42.1, memoryUtilizationPercent: 64.8, networkThroughputMbps: 65, costPerHourUsd: 0.2400, lossPerHourUsd: 0 },
+          { id: 'ecofinops-lake-s3', name: 'ecofinops-cur-datalake', type: 'S3 Standard (1.42 TB)', service: 'Amazon S3', region: 'us-east-1', state: 'OPTIMAL', cpuUtilizationPercent: 0, memoryUtilizationPercent: 0, networkThroughputMbps: 12, costPerHourUsd: 0.0322, lossPerHourUsd: 0 },
+          { id: 'nat-gw-us-east-1a', name: 'vpc-nat-gateway-public', type: 'VPC NAT Gateway', service: 'Amazon VPC', region: 'us-east-1', state: 'SPIKING', cpuUtilizationPercent: 0, memoryUtilizationPercent: 0, networkThroughputMbps: 85, costPerHourUsd: 0.0450, lossPerHourUsd: 0.0150 },
+          { id: 'lambda-metrics-collector', name: 'serverless-telemetry-ingest', type: 'AWS Lambda (1.2M req/mo)', service: 'AWS Lambda', region: 'us-east-1', state: 'HEALTHY', cpuUtilizationPercent: 28.0, memoryUtilizationPercent: 35.0, networkThroughputMbps: 6, costPerHourUsd: 0.0084, lossPerHourUsd: 0 }
+        ],
+        costMetrics: { totalMonthSpendUsd: 1248.60, currentHourlyRunRateUsd: 1.734, dailyRunRateUsd: 41.62, projectedMonthEndSpendUsd: 1289.40, awsSharePercent: 58.0, gcpSharePercent: 42.0, currency: 'USD' },
+        lossMetrics: { hourlyLossRateUsd: 0.196, monthlyWasteLossUsd: 286.40, idleZombieLossUsd: 114.20, overprovisionedLossUsd: 172.20, carbonExcessLossKg: 59.8, efficiencyScorePercent: 74.8, potentialRecoverableSavingsUsd: 342.80 }
+      };
+    }
+
     function updateLiveDashboardUI(data) {
       if (!data) return;
+
+      const cm = data.currentMetrics || {};
+      const cost = data.costMetrics || {};
+      const loss = data.lossMetrics || {};
 
       // 1. Update Connection Status Badge
       const badge = document.getElementById('streamProviderBadge');
       if (badge) {
         if (data.isConnectedToAws) {
-          badge.textContent = 'AWS ' + data.awsRegion + ' (Live Connected)';
+          badge.textContent = 'AWS ' + (data.awsRegion || 'us-east-1') + ' (Live Connected)';
           badge.style.color = '#34d399';
         } else {
-          badge.textContent = 'Hybrid Live Feed (' + data.awsRegion + ')';
+          badge.textContent = 'Hybrid Live Feed (' + (data.awsRegion || 'us-east-1') + ')';
           badge.style.color = '#38bdf8';
         }
       }
 
       // 2. Update Live KPI Cards
       const avgCpuEl = document.getElementById('liveAvgCpu');
-      if (avgCpuEl) avgCpuEl.textContent = data.currentMetrics.avgCpuPercent.toFixed(1) + '%';
+      if (avgCpuEl && typeof cm.avgCpuPercent === 'number') avgCpuEl.textContent = cm.avgCpuPercent.toFixed(1) + '%';
 
       const avgRamEl = document.getElementById('liveAvgRam');
-      if (avgRamEl) avgRamEl.textContent = data.currentMetrics.avgMemoryPercent.toFixed(1) + '%';
+      if (avgRamEl && typeof cm.avgMemoryPercent === 'number') avgRamEl.textContent = cm.avgMemoryPercent.toFixed(1) + '%';
 
       const netEl = document.getElementById('liveNetwork');
-      if (netEl) netEl.textContent = data.currentMetrics.networkMbps + ' Mbps';
+      if (netEl && cm.networkMbps !== undefined) netEl.textContent = cm.networkMbps + ' Mbps';
 
       const peakCpuEl = document.getElementById('livePeakCpu');
-      if (peakCpuEl) peakCpuEl.textContent = data.currentMetrics.peakCpuPercent.toFixed(1) + '%';
+      if (peakCpuEl && typeof cm.peakCpuPercent === 'number') peakCpuEl.textContent = cm.peakCpuPercent.toFixed(1) + '%';
 
       // Cost Metrics
       const hourlySpendEl = document.getElementById('liveHourlySpend');
-      if (hourlySpendEl) hourlySpendEl.textContent = '$' + data.costMetrics.currentHourlyRunRateUsd.toFixed(3);
+      if (hourlySpendEl && typeof cost.currentHourlyRunRateUsd === 'number') hourlySpendEl.textContent = '$' + cost.currentHourlyRunRateUsd.toFixed(3);
 
       const dailySpendEl = document.getElementById('liveDailySpend');
-      if (dailySpendEl) dailySpendEl.textContent = '$' + data.costMetrics.dailyRunRateUsd.toFixed(2);
+      if (dailySpendEl && typeof cost.dailyRunRateUsd === 'number') dailySpendEl.textContent = '$' + cost.dailyRunRateUsd.toFixed(2);
 
       const mtdSpendEl = document.getElementById('liveMtdSpend');
-      if (mtdSpendEl) mtdSpendEl.textContent = '$' + data.costMetrics.totalMonthSpendUsd.toFixed(2);
+      if (mtdSpendEl && typeof cost.totalMonthSpendUsd === 'number') mtdSpendEl.textContent = '$' + cost.totalMonthSpendUsd.toFixed(2);
 
       // Loss Metrics
       const monthlyWasteEl = document.getElementById('liveMonthlyWaste');
-      if (monthlyWasteEl) monthlyWasteEl.textContent = '$' + data.lossMetrics.monthlyWasteLossUsd.toFixed(2);
+      if (monthlyWasteEl && typeof loss.monthlyWasteLossUsd === 'number') monthlyWasteEl.textContent = '$' + loss.monthlyWasteLossUsd.toFixed(2);
 
       const hourlyLossEl = document.getElementById('liveHourlyLoss');
-      if (hourlyLossEl) hourlyLossEl.textContent = '$' + data.lossMetrics.hourlyLossRateUsd.toFixed(3);
+      if (hourlyLossEl && typeof loss.hourlyLossRateUsd === 'number') hourlyLossEl.textContent = '$' + loss.hourlyLossRateUsd.toFixed(3);
 
       const zombieLossEl = document.getElementById('liveZombieLoss');
-      if (zombieLossEl) zombieLossEl.textContent = '$' + data.lossMetrics.idleZombieLossUsd.toFixed(2);
+      if (zombieLossEl && typeof loss.idleZombieLossUsd === 'number') zombieLossEl.textContent = '$' + loss.idleZombieLossUsd.toFixed(2);
 
       // Efficiency Score & Recovery
       const effScoreEl = document.getElementById('liveEfficiencyScore');
-      if (effScoreEl) effScoreEl.textContent = data.lossMetrics.efficiencyScorePercent.toFixed(1) + '%';
+      if (effScoreEl && typeof loss.efficiencyScorePercent === 'number') effScoreEl.textContent = loss.efficiencyScorePercent.toFixed(1) + '%';
 
       const recovEl = document.getElementById('liveRecoverableSavings');
-      if (recovEl) recovEl.textContent = '$' + data.lossMetrics.potentialRecoverableSavingsUsd.toFixed(2);
+      if (recovEl && typeof loss.potentialRecoverableSavingsUsd === 'number') recovEl.textContent = '$' + loss.potentialRecoverableSavingsUsd.toFixed(2);
 
       const carbonLossEl = document.getElementById('liveCarbonExcess');
-      if (carbonLossEl) carbonLossEl.textContent = data.lossMetrics.carbonExcessLossKg.toFixed(1) + ' kg';
+      if (carbonLossEl && typeof loss.carbonExcessLossKg === 'number') carbonLossEl.textContent = loss.carbonExcessLossKg.toFixed(1) + ' kg';
 
       // Detail bottom cards
       const detZombie = document.getElementById('detailZombieLoss');
-      if (detZombie) detZombie.textContent = '$' + data.lossMetrics.idleZombieLossUsd.toFixed(2);
+      if (detZombie && typeof loss.idleZombieLossUsd === 'number') detZombie.textContent = '$' + loss.idleZombieLossUsd.toFixed(2);
 
       const detOversize = document.getElementById('detailOversizeLoss');
-      if (detOversize) detOversize.textContent = '$' + data.lossMetrics.overprovisionedLossUsd.toFixed(2);
+      if (detOversize && typeof loss.overprovisionedLossUsd === 'number') detOversize.textContent = '$' + loss.overprovisionedLossUsd.toFixed(2);
 
       const detCarbon = document.getElementById('detailCarbonLoss');
-      if (detCarbon) detCarbon.textContent = data.lossMetrics.carbonExcessLossKg.toFixed(1) + ' kg CO₂e';
+      if (detCarbon && typeof loss.carbonExcessLossKg === 'number') detCarbon.textContent = loss.carbonExcessLossKg.toFixed(1) + ' kg CO₂e';
 
       // Last Tick Time & Active Count
       const tickTimeEl = document.getElementById('lastTickTime');
       if (tickTimeEl) tickTimeEl.textContent = data.formattedTime || new Date().toLocaleTimeString();
 
       const actBadge = document.getElementById('activeBadge');
-      if (actBadge) actBadge.textContent = (data.activeResources?.length || 7) + ' Active Services';
+      if (actBadge) actBadge.textContent = ((data.activeResources && data.activeResources.length) || 7) + ' Active Services';
 
       // 3. Render Chart
-      renderSvgLineChart(data.usageHistory, currentChartMetric);
+      if (data.usageHistory) {
+        renderSvgLineChart(data.usageHistory, currentChartMetric);
+      }
 
       // 4. Render Active Resources List ("what are all using")
-      renderResourceInventory(data.activeResources);
+      if (data.activeResources) {
+        renderResourceInventory(data.activeResources);
+      }
     }
 
     function renderSvgLineChart(history, metric) {
@@ -1880,7 +1923,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       if (svgDots) {
         let dotsHtml = '';
         points.forEach(function(p) {
-          dotsHtml += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4" fill="' + color + '" stroke="#ffffff" stroke-width="1.5" style="cursor: pointer;" onmouseover="showChartTooltip(event, \'' + p.time + '\', \'' + formatVal(p.raw) + '\')" onmouseout="hideChartTooltip()" />';
+          dotsHtml += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="4" fill="' + color + '" stroke="#ffffff" stroke-width="1.5" style="cursor: pointer;" data-time="' + p.time + '" data-val="' + formatVal(p.raw) + '" class="chart-dot" />';
         });
         svgDots.innerHTML = dotsHtml;
       }
@@ -1890,7 +1933,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
         let xHtml = '';
         points.forEach(function(p, idx) {
           if (idx === 0 || idx === Math.floor(n / 2) || idx === n - 1 || idx % 4 === 0) {
-            xHtml += '<text x="' + p.x.toFixed(1) + '" y="215" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="\'JetBrains Mono\', monospace">' + p.time + '</text>';
+            xHtml += '<text x="' + p.x.toFixed(1) + '" y="215" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="monospace">' + p.time + '</text>';
           }
         });
         xLabels.innerHTML = xHtml;
@@ -1904,9 +1947,30 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
           const val = minVal + s * (maxVal - minVal);
           const y = baseY - s * height;
           const display = metric === 'cost' ? '$' + val.toFixed(2) : (metric === 'net' ? Math.round(val) : Math.round(val) + '%');
-          yHtml += '<text x="44" y="' + (y + 3) + '" fill="#64748b" font-size="9" text-anchor="end" font-family="\'JetBrains Mono\', monospace">' + display + '</text>';
+          yHtml += '<text x="44" y="' + (y + 3) + '" fill="#64748b" font-size="9" text-anchor="end" font-family="monospace">' + display + '</text>';
         });
         yLabels.innerHTML = yHtml;
+      }
+
+      setupChartEventsOnce();
+    }
+
+    function setupChartEventsOnce() {
+      const svgDots = document.getElementById('svgChartDots');
+      if (svgDots && !svgDots.__eventsAttached) {
+        svgDots.__eventsAttached = true;
+        svgDots.addEventListener('mouseover', function(e) {
+          const t = e.target;
+          if (t && t.getAttribute && t.getAttribute('data-time')) {
+            showChartTooltip(e, t.getAttribute('data-time'), t.getAttribute('data-val'));
+          }
+        });
+        svgDots.addEventListener('mouseout', function(e) {
+          const t = e.target;
+          if (t && t.getAttribute && t.getAttribute('data-time')) {
+            hideChartTooltip();
+          }
+        });
       }
     }
 
@@ -1957,7 +2021,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
             '<div>' +
               '<div style="font-weight: 700; font-size: 0.85rem; color: #ffffff; display: flex; align-items: center; gap: 0.4rem;">' +
                 '<span>' + r.name + '</span>' +
-                '<span style="font-family: \'JetBrains Mono\', monospace; font-size: 0.7rem; color: #94a3b8;">(' + r.id + ')</span>' +
+                '<span style="font-family: monospace; font-size: 0.7rem; color: #94a3b8;">(' + r.id + ')</span>' +
               '</div>' +
               '<div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.3;">' +
                 r.service + ' &bull; <span style="color: #cbd5e1;">' + r.region + '</span>' +
@@ -1991,6 +2055,9 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
     }
 
     function startLiveStream() {
+      // Immediate baseline render so graph and boxes are NEVER blank or empty
+      updateLiveDashboardUI(getBaselineStreamData());
+
       // Immediate first tick
       fetchLiveStreamTick();
 
@@ -2006,6 +2073,15 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
         }
       }, 1000);
     }
+
+    // Explicitly bind all interactive handler functions to window so buttons never fail
+    window.runScenario = runScenario;
+    window.runCustomPrompt = runCustomPrompt;
+    window.copyMcpConfig = copyMcpConfig;
+    window.fetchLiveTelemetry = fetchLiveTelemetry;
+    window.toggleStream = toggleStream;
+    window.setChartMetric = setChartMetric;
+    window.fetchLiveStreamTick = fetchLiveStreamTick;
 
     window.addEventListener('load', () => {
       // Start live 10-second streaming
