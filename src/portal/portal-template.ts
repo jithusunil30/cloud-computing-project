@@ -1538,12 +1538,17 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       const consoleEl = document.getElementById('outputConsole');
       consoleEl.textContent = '⏳ Executing agent scenario [' + scenarioKey + '] on backend... Please wait...';
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       try {
         const res = await fetch('/api/agents/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scenario: scenarioKey })
+          body: JSON.stringify({ scenario: scenarioKey }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
         
         if (!res.ok) {
           throw new Error('Server returned HTTP ' + res.status);
@@ -1552,7 +1557,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
         const data = await res.json();
         consoleEl.textContent = formatAgentResult(data);
       } catch (err) {
-        // Fallback to client-side demonstration if API unavailable
+        clearTimeout(timeoutId);
         consoleEl.textContent = getClientFallbackScenario(scenarioKey);
       }
     }
@@ -1568,12 +1573,17 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       const consoleEl = document.getElementById('outputConsole');
       consoleEl.textContent = '⏳ Dispatching prompt through Supervisor Agent DAG...\\nQuery: "' + query + '"...';
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       try {
         const res = await fetch('/api/agents/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: query })
+          body: JSON.stringify({ prompt: query }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
         
         if (!res.ok) {
           throw new Error('Server returned HTTP ' + res.status);
@@ -1582,6 +1592,7 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
         const data = await res.json();
         consoleEl.textContent = formatAgentResult(data);
       } catch (err) {
+        clearTimeout(timeoutId);
         consoleEl.textContent = getClientFallbackPrompt(query);
       }
     }
@@ -1609,7 +1620,8 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
       if (data.traces && data.traces.length > 0) {
         out += '🔍 Execution Traces (' + data.traces.length + ' steps):\\n';
         data.traces.forEach((t, i) => {
-          out += '  [' + (i + 1) + '] Agent ' + t.agentId + ' (' + t.action + '): ' + t.status + ' (' + t.durationMs + 'ms)\\n';
+          const actionText = t.action || t.task || 'Executed';
+          out += '  [' + (i + 1) + '] Agent ' + t.agentId + ' (' + actionText + '): ' + t.status + ' (' + t.durationMs + 'ms)\\n';
         });
       }
 

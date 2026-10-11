@@ -23,8 +23,16 @@ export class PythonBridgeService {
     this.runnerPath = candidatePaths.find((p) => fs.existsSync(p)) || candidatePaths[0];
   }
 
-  async executeAction<T = any>(action: string, params: Record<string, any> = {}, timeoutMs = 15000): Promise<T> {
-    const pythonExe = process.env.PYTHON_PATH || 'python';
+  async executeAction<T = any>(action: string, params: Record<string, any> = {}, timeoutMs = 4000): Promise<T> {
+    let pythonExe = process.env.PYTHON_PATH;
+    if (!pythonExe) {
+      const candidates = [
+        'C:\\Users\\USER\\AppData\\Local\\Microsoft\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\python.exe',
+        'py',
+        'python',
+      ];
+      pythonExe = candidates.find((c) => fs.existsSync(c)) || 'python';
+    }
     const payload = JSON.stringify({ action, params });
 
     return new Promise<T>((resolve) => {
@@ -34,7 +42,7 @@ export class PythonBridgeService {
 
       const pythonDir = path.dirname(this.runnerPath);
       const pythonSrc = path.resolve(pythonDir, 'src');
-      const pythonProcess = spawn(pythonExe, [this.runnerPath], {
+      const pythonProcess = spawn(pythonExe, [this.runnerPath, payload], {
         env: {
           ...process.env,
           PYTHONPATH: `${pythonDir}${path.delimiter}${pythonSrc}`,
@@ -44,7 +52,7 @@ export class PythonBridgeService {
       const timer = setTimeout(() => {
         if (!settled) {
           settled = true;
-          pythonProcess.kill();
+          try { pythonProcess.kill(); } catch (_) {}
           console.warn(`[PythonBridge] Action "${action}" timed out after ${timeoutMs}ms. Using deterministic fallback.`);
           resolve(this.getDeterministicFallback(action, params) as T);
         }
