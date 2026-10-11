@@ -14,6 +14,7 @@ import { AppModule } from './app.module.js';
 import { renderEcoFinOpsPortalHtml } from './portal/portal-template.js';
 import { SupervisorOrchestrationAgent } from './modules/agents/agent-10-supervisor.service.js';
 import { CloudTelemetryProviderService } from './modules/cloud/cloud-telemetry.service.js';
+import { PythonBridgeService } from './modules/agents/python-bridge.service.js';
 
 /**
  * Bootstrap the application
@@ -237,6 +238,9 @@ async function bootstrap() {
               case 'governance':
                 targetPrompt = 'Audit hard budget constraints and read-only guardrails';
                 break;
+              case 'serverless':
+                targetPrompt = 'Simulate serverless cold-start pre-warming framework and benchmark Azure Functions 2019 trace';
+                break;
               case 'report':
                 targetPrompt = 'Synthesize executive briefing with calculation provenance';
                 break;
@@ -298,6 +302,31 @@ async function bootstrap() {
         } catch (e: any) {
           res.status(500).json({ error: e.message });
         }
+      });
+
+      // 8. Serverless Cold-Start Pre-Warming (IEEE 2026 Paper Benchmark & Live Simulation)
+      app.get('/api/serverless/benchmark', async (_req: any, res: any) => {
+        try {
+          const bridge = DIContainer.getInstance().resolve(PythonBridgeService) as PythonBridgeService;
+          const result = await bridge.executeAction('serverless_paper_metrics', {});
+          res.json(result);
+        } catch (e: any) {
+          res.status(500).json({ error: e.message });
+        }
+      });
+
+      app.post('/api/serverless/simulate', async (req: any, res: any) => {
+        try {
+          const bridge = DIContainer.getInstance().resolve(PythonBridgeService) as PythonBridgeService;
+          const result = await bridge.executeAction('serverless_simulation', req.body || {});
+          res.json(result);
+        } catch (e: any) {
+          res.status(500).json({ error: e.message });
+        }
+      });
+
+      app.get('/serverless', (_req: any, res: any) => {
+        res.redirect('/#serverless');
       });
     }
   }

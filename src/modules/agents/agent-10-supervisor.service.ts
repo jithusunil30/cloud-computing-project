@@ -69,6 +69,24 @@ export class SupervisorOrchestrationAgent {
     const p = prompt.toLowerCase();
 
     if (
+      p.includes('serverless') ||
+      p.includes('cold start') ||
+      p.includes('cold-start') ||
+      p.includes('pre-warm') ||
+      p.includes('prewarm')
+    ) {
+      return {
+        classification: 'serverless_coldstart_optimization',
+        agentIds: [
+          'agent-02-cost-forecasting',
+          'agent-05-workload-scheduling',
+          'agent-06-resource-optimization',
+          'agent-09-recommendation-verification',
+        ],
+      };
+    }
+
+    if (
       p.includes('cross-domain') ||
       p.includes('cross domain') ||
       p.includes('comprehensive') ||
