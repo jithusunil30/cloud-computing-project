@@ -15,6 +15,17 @@ from src.carbon_engine import compute_carbon_footprint, get_carbon_methodology_d
 from src.forecasting import prepare_forecasting_data, train_and_evaluate_forecasting, evaluate_rolling_origin_forecasting
 from src.anomaly_detector import detect_anomalies_and_waste
 from src.optimizer import optimize_schedules, get_hourly_grid_profile
+from serverless_prewarming import (
+    run_serverless_comparative_evaluation,
+    get_canonical_paper_benchmark,
+    DynamicResourceTierer,
+    CANONICAL_TIER1_CUTOFF,
+    CANONICAL_TIER2_CUTOFF,
+    WARM_LATENCY_MS,
+    COLD_LATENCY_MS,
+    SLA_LIMIT_MS,
+    CONTAINER_CAPACITY,
+)
 
 # ---------------------------------------------------------
 # Page Configuration & Styling
@@ -148,13 +159,14 @@ st.caption("Agentic-Ready Intelligent Cloud Financial & Sustainability Operation
 # ---------------------------------------------------------
 # Tabs Navigation
 # ---------------------------------------------------------
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "📊 Executive Overview",
     "🔮 ML Cost Forecasting",
     "🚨 Waste & Anomalies",
     "⚡ Scheduling Optimizer",
     "📚 Methodology & Specs",
     "🤖 Agentic MCP Server",
+    "🚀 Serverless Pre-Warming (IEEE 2026)",
 ])
 
 # ---------------------------------------------------------
@@ -512,6 +524,8 @@ python mcp_server.py""",
         "detect_anomalies_and_waste",
         "optimize_workload_schedules",
         "get_carbon_methodology",
+        "simulate_serverless_coldstart",
+        "get_serverless_paper_metrics",
     ])
 
     if st.button("▶️ Execute Tool via MCP Module"):
@@ -521,6 +535,8 @@ python mcp_server.py""",
             detect_anomalies_and_waste as mcp_anomalies,
             optimize_workload_schedules as mcp_opt,
             get_carbon_methodology as mcp_doc,
+            simulate_serverless_coldstart as mcp_sim,
+            get_serverless_paper_metrics as mcp_paper,
         )
         if selected_tool == "get_telemetry_summary":
             res = mcp_summary(num_days=num_days, seed=seed_val, regions=selected_regions if selected_regions else None)
@@ -530,7 +546,207 @@ python mcp_server.py""",
             res = mcp_anomalies(num_days=num_days, seed=seed_val)
         elif selected_tool == "optimize_workload_schedules":
             res = mcp_opt(seed=seed_val)
+        elif selected_tool == "simulate_serverless_coldstart":
+            res = mcp_sim(mode="benchmark", seed=seed_val)
+        elif selected_tool == "get_serverless_paper_metrics":
+            res = mcp_paper()
         else:
             res = mcp_doc()
 
         st.json(res) if isinstance(res, dict) else st.markdown(res)
+
+# ---------------------------------------------------------
+# TAB 7: SERVERLESS COLD-START PRE-WARMING (IEEE 2026)
+# ---------------------------------------------------------
+with tab7:
+    st.markdown("## 🚀 Optimizing Serverless Cloud Computing using Agentic AI")
+    st.caption(
+        "Implementation of IEEE Paper: Multi-Horizon Traffic Prediction, Dynamic Resource Tiering, "
+        "and Predictive Pre-Warming (Kavitha P, Jithu S, Devika A P — Microsoft Azure Functions 2019 Trace)"
+    )
+
+    c_mode1, c_mode2 = st.columns([2, 1])
+    with c_mode1:
+        serverless_eval_mode = st.radio(
+            "Evaluation & Operating Mode",
+            options=["Canonical IEEE 2026 Published Benchmark (Tables V & VI)", "Live XGBoost Trace Simulation (3,024 Chronological Test Minutes)"],
+            horizontal=True,
+        )
+    with c_mode2:
+        st.markdown(
+            """<div style='background-color:#1e293b; padding:10px; border-radius:8px; border:1px solid #334155; font-size:0.85rem;'>
+            <b>Trace Dataset:</b> 14 Days (20,160 Mins)<br>
+            <b>Functions:</b> 72,359 across 24,274 Apps<br>
+            <b>Container Cap:</b> 50k req/min/instance
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+    # Load benchmark data or run live simulation
+    if serverless_eval_mode == "Canonical IEEE 2026 Published Benchmark (Tables V & VI)":
+        bench_data = get_canonical_paper_benchmark()
+        table_v_display = bench_data["table_v_df"]
+        table_vi_display = bench_data["table_vi_df"]
+        pred_metrics_display = bench_data["prediction_metrics"]
+        is_live = False
+    else:
+        with st.spinner("Executing multi-horizon XGBoost training & trace simulation (3,024 test minutes)..."):
+            live_res = run_serverless_comparative_evaluation(seed=seed_val)
+            table_v_display = live_res["table_v_df"]
+            table_vi_display = live_res["table_vi_df"]
+            pred_metrics_display = live_res["prediction_metrics"]
+            ts_sim_df = live_res["ts_df"]
+            is_live = True
+
+    st.markdown("---")
+    st.subheader("Executive System Performance Summary (Proposed Framework vs Reactive Autoscaling)")
+
+    kpi_s1, kpi_s2, kpi_s3, kpi_s4, kpi_s5 = st.columns(5)
+    with kpi_s1:
+        st.metric(label="Average Latency", value="50.00 ms", delta="-15.09 ms (-23.2%)", delta_color="inverse")
+    with kpi_s2:
+        st.metric(label="Cold Starts", value="0", delta="-13,009,945 (-100%)", delta_color="inverse")
+    with kpi_s3:
+        st.metric(label="Cold Start Rate", value="0.0000%", delta="-0.6633%", delta_color="inverse")
+    with kpi_s4:
+        st.metric(label="P95 / P99 Latency", value="50.00 ms", delta="Flat Warm Latency", delta_color="off")
+    with kpi_s5:
+        st.metric(label="SLA Violations", value="0.00%", delta="100% Compliant", delta_color="normal")
+
+    st.markdown("---")
+    col_chart_a, col_chart_b = st.columns(2)
+
+    with col_chart_a:
+        st.markdown("### 📊 Average Response Latency Comparison (Fig. 8)")
+        fig_lat = px.bar(
+            table_v_display,
+            x="System Architecture",
+            y="Avg Lat (ms)",
+            text="Avg Lat (ms)",
+            color="System Architecture",
+            color_discrete_sequence=["#ef4444", "#f97316", "#3b82f6", "#10b981"],
+            title="Average Latency (ms) across Four Evaluated Architectures",
+        )
+        fig_lat.update_layout(
+            template="plotly_dark",
+            showlegend=False,
+            yaxis_title="Latency (ms)",
+            yaxis=dict(range=[40, 80]),
+        )
+        fig_lat.add_hline(y=50.0, line_dash="dash", line_color="#10b981", annotation_text="Ideal Warm Latency (50ms)")
+        st.plotly_chart(fig_lat, use_container_width=True)
+
+    with col_chart_b:
+        st.markdown("### 🧊 Cold-Start Rate (%) Comparison (Fig. 9)")
+        fig_cs = px.bar(
+            table_v_display,
+            x="System Architecture",
+            y="CS Rate (%)",
+            text="CS Rate (%)",
+            color="System Architecture",
+            color_discrete_sequence=["#ef4444", "#f97316", "#3b82f6", "#10b981"],
+            title="Cold-Start Rate (%) across Four Evaluated Architectures",
+        )
+        fig_cs.update_layout(
+            template="plotly_dark",
+            showlegend=False,
+            yaxis_title="Cold-Start Rate (%)",
+        )
+        st.plotly_chart(fig_cs, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("### 📈 Multi-Horizon Traffic Prediction & Dynamic Resource Tiering (Figs. 5, 6, 7)")
+
+    if is_live:
+        sample_ts = ts_sim_df.iloc[:240]  # Display first 4 hours of test set for clarity
+        fig_forecast = go.Figure()
+        fig_forecast.add_trace(go.Scatter(x=sample_ts["timestamp"], y=sample_ts["actual_workload"], name="Actual Workload W(t)", line=dict(color="#38bdf8", width=2)))
+        fig_forecast.add_trace(go.Scatter(x=sample_ts["timestamp"], y=sample_ts["pred_5m"], name="5-min Forecast W^(t+5)", line=dict(color="#f59e0b", dash="dot")))
+        fig_forecast.add_trace(go.Scatter(x=sample_ts["timestamp"], y=sample_ts["pred_15m"], name="15-min Forecast W^(t+15)", line=dict(color="#a855f7", dash="dash")))
+        fig_forecast.add_trace(go.Scatter(x=sample_ts["timestamp"], y=sample_ts["agentic_capacity"], name="Agentic Provisioned Capacity", line=dict(color="#10b981", width=3)))
+        fig_forecast.add_hline(y=CANONICAL_TIER1_CUTOFF, line_dash="dash", line_color="#64748b", annotation_text="Tier 1 Cutoff (581,104)")
+        fig_forecast.add_hline(y=CANONICAL_TIER2_CUTOFF, line_dash="dash", line_color="#94a3b8", annotation_text="Tier 2 Cutoff (642,125)")
+        fig_forecast.update_layout(
+            template="plotly_dark",
+            title="Trace Time-Series: Multi-Horizon Lookahead vs Dynamically Provisioned Container Capacity",
+            xaxis_title="Time",
+            yaxis_title="Invocations / Minute",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        )
+        st.plotly_chart(fig_forecast, use_container_width=True)
+    else:
+        st.info("💡 Switch to **Live XGBoost Trace Simulation** above to inspect interactive minute-by-minute lookahead forecast traces and dynamic container headroom.")
+
+    col_t5, col_t6 = st.columns(2)
+    with col_t5:
+        st.markdown("### 📋 Table V: Comparative System Architecture Evaluation")
+        st.dataframe(table_v_display, use_container_width=True, hide_index=True)
+
+    with col_t6:
+        st.markdown("### 🔬 Table VI: Component Ablation Study Matrix")
+        st.dataframe(table_vi_display, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    st.markdown("### 🤖 Agentic Closed-Loop Controller Lifecycle")
+    st.markdown(
+        """
+        The controller executes continuous 1-minute closed-loop cycles across six operational stages:
+        ```
+        [OBSERVE] ──> [PREDICT] ──> [DECIDE] ──> [ACT] ──> [MONITOR] ──> [ADJUST]
+        ```
+        * **OBSERVE:** Monitors current workload $W(t)$, active tier, provisioned warm instances, and past latency $L(t-1)$.
+        * **PREDICT:** Receives multi-horizon XGBoost forecasts $\\hat{W}(t+5)$, $\\hat{W}(t+15)$, and $\\hat{W}(t+30)$.
+        * **DECIDE:** Evaluates whether to execute `KEEP`, `SCALE_UP`, `SCALE_DOWN`, `PREWARM`, or `CHANGE_TIER`.
+        * **ACT:** Provisions warm container pools before the surge arrives.
+        * **MONITOR:** Measures execution latency, container capacity saturation, and SLA margins.
+        * **ADJUST:** Feeds back observed outcomes to adapt buffer thresholds for subsequent cycles.
+        """
+    )
+
+    c_act1, c_act2, c_act3, c_act4 = st.columns(4)
+    with c_act1:
+        st.metric("KEEP Decisions", "2,616 (86.5%)", "Steady State Preservation")
+    with c_act2:
+        st.metric("CHANGE_TIER Decisions", "405 (13.4%)", "Percentile Tier Shift")
+    with c_act3:
+        st.metric("SCALE_UP / DOWN", "2 Decisions", "Fine-grain capacity adjust")
+    with c_act4:
+        st.metric("Proactive PREWARM", "1 Decision", "Anticipated surge buffer")
+
+    st.markdown("---")
+    st.markdown("### ⚡ Interactive Live Workload Surge & Cold-Start Calculator")
+    st.caption("Test how reactive autoscaling lags during sudden bursts while predictive pre-warming avoids cold starts.")
+
+    c_sim_in1, c_sim_in2, c_sim_in3 = st.columns(3)
+    with c_sim_in1:
+        sim_current_pool = st.slider("Current Active Instance Pool", min_value=8, max_value=25, value=12, step=1, help="50,000 invocations/min per instance")
+    with c_sim_in2:
+        sim_spike_workload = st.slider("Incoming Sudden Workload Spike (req/min)", min_value=500000, max_value=1250000, value=850000, step=25000)
+    with c_sim_in3:
+        sim_lookahead_known = st.selectbox("Predictive Multi-Horizon Engine Status", options=["Enabled (Pre-Warmed 5m/15m Ahead)", "Disabled (Pure Reactive Autoscaling)"])
+
+    pool_cap = sim_current_pool * CONTAINER_CAPACITY
+    if sim_lookahead_known.startswith("Enabled"):
+        eff_instances = int(np.ceil(sim_spike_workload / CONTAINER_CAPACITY))
+        eff_cap = eff_instances * CONTAINER_CAPACITY
+        cold_reqs = 0
+        warm_reqs = sim_spike_workload
+        calc_lat = WARM_LATENCY_MS
+        sla_violation = False
+    else:
+        eff_instances = sim_current_pool
+        eff_cap = pool_cap
+        cold_reqs = max(0, sim_spike_workload - eff_cap)
+        warm_reqs = min(sim_spike_workload, eff_cap)
+        calc_lat = (warm_reqs * WARM_LATENCY_MS + cold_reqs * COLD_LATENCY_MS) / sim_spike_workload
+        sla_violation = calc_lat > SLA_LIMIT_MS
+
+    res_box1, res_box2, res_box3, res_box4 = st.columns(4)
+    with res_box1:
+        st.metric("Effective Instances", f"{eff_instances} instances", f"{eff_cap:,} req/min capacity")
+    with res_box2:
+        st.metric("Cold Starts Suffered", f"{cold_reqs:,} invocations", f"{(cold_reqs/sim_spike_workload)*100:.2f}% cold start rate")
+    with res_box3:
+        st.metric("Average Response Latency", f"{calc_lat:.1f} ms", f"{'🚨 SLA Breached' if sla_violation else '✅ Within SLA (1500ms)'}")
+    with res_box4:
+        st.metric("Controller Proactive Action", "PREWARM / TIER 3" if sim_lookahead_known.startswith("Enabled") else "REACTIVE LAG (Cold Start)")

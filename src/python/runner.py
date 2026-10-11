@@ -21,6 +21,10 @@ from src.carbon_engine import compute_carbon_footprint, get_carbon_methodology_d
 from src.forecasting import prepare_forecasting_data, train_and_evaluate_forecasting, evaluate_rolling_origin_forecasting, calculate_metrics
 from src.anomaly_detector import detect_anomalies_and_waste
 from src.optimizer import optimize_schedules, get_hourly_grid_profile
+from src.serverless_prewarming import (
+    run_serverless_comparative_evaluation,
+    get_canonical_paper_benchmark,
+)
 
 
 def get_telemetry_df(data_mode: str = "synthetic", num_days: int = 30, seed: int = 42):
@@ -311,6 +315,54 @@ def action_model_evaluation(params):
     }
 
 
+def action_serverless_simulation(params):
+    mode = params.get("mode", "benchmark")
+    seed = params.get("seed", 42)
+
+    if mode == "live":
+        res = run_serverless_comparative_evaluation(seed=seed)
+        return {
+            "status": "success",
+            "mode": "live",
+            "test_minutes": res["test_minutes"],
+            "prediction_metrics": res["prediction_metrics"],
+            "table_v_comparison": res["table_v_df"].to_dict(orient="records"),
+            "table_vi_ablation": res["table_vi_df"].to_dict(orient="records"),
+            "action_breakdown": res["systems"]["proposed_agentic"]["action_breakdown"],
+            "evidence": [
+                f"Simulated full chronological test trace across {res['test_minutes']} minutes using multi-horizon XGBoost models.",
+                f"Proposed framework achieved {res['systems']['proposed_agentic']['avg_latency_ms']} ms average latency with {res['systems']['proposed_agentic']['cold_starts']} cold starts.",
+            ],
+        }
+    else:
+        bench = get_canonical_paper_benchmark()
+        return {
+            "status": "success",
+            "mode": "benchmark",
+            "paper_title": "Optimizing Serverless Cloud Computing using Agentic AI, Multi-Horizon Traffic Prediction, Dynamic Resource Tiering, and Predictive Pre-Warming",
+            "authors": ["Kavitha P", "Jithu S", "Devika A P"],
+            "dataset_summary": bench["dataset_summary"],
+            "prediction_metrics": bench["prediction_metrics"],
+            "table_v_comparison": bench["table_v_df"].to_dict(orient="records"),
+            "table_vi_ablation": bench["table_vi_df"].to_dict(orient="records"),
+            "evidence": [
+                "Extracted canonical test results from Microsoft Azure Functions 2019 trace (3,024 test minutes).",
+                "Recorded 0 cold starts and 50.00 ms flat latency under the proposed agentic framework (vs 13,009,945 cold starts under reactive autoscaling).",
+            ],
+        }
+
+
+def action_serverless_paper_metrics(params):
+    bench = get_canonical_paper_benchmark()
+    return {
+        "status": "success",
+        "dataset_summary": bench["dataset_summary"],
+        "prediction_metrics": bench["prediction_metrics"],
+        "table_v_comparison": bench["table_v_df"].to_dict(orient="records"),
+        "table_vi_ablation": bench["table_vi_df"].to_dict(orient="records"),
+    }
+
+
 def main():
     if len(sys.argv) > 1:
         raw_input = sys.argv[1]
@@ -337,6 +389,8 @@ def main():
         "carbon": action_carbon,
         "region_comparison": action_region_comparison,
         "model_evaluation": action_model_evaluation,
+        "serverless_simulation": action_serverless_simulation,
+        "serverless_paper_metrics": action_serverless_paper_metrics,
     }
 
     if action not in actions:

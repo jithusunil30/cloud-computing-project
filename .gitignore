@@ -31,3 +31,4 @@ venv/
 
 # Local reference clone
 github_repo/
+scratch/

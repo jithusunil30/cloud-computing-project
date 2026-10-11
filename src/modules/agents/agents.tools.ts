@@ -185,6 +185,19 @@ export class AgentsTools {
   }
 
   @Tool({
+    name: 'simulate_serverless_coldstart',
+    description: 'Simulate serverless cold-start pre-warming and compare Reactive Autoscaling, Single-Horizon Prediction, and Agentic Multi-Horizon Pre-Warming on the Microsoft Azure Functions 2019 trace (IEEE 2026 Paper).',
+    inputSchema: z.object({
+      mode: z.enum(['benchmark', 'live']).default('benchmark').describe('Mode: "benchmark" for canonical paper findings (Tables V & VI) or "live" for on-the-fly XGBoost trace simulation'),
+      seed: z.number().int().default(42).describe('Random seed for trace variation'),
+    }),
+  })
+  async simulateServerlessColdstart(input: any, ctx: ExecutionContext) {
+    ctx.logger.info('Tool: simulate_serverless_coldstart', input);
+    return this.pythonBridge.executeAction('serverless_simulation', input);
+  }
+
+  @Tool({
     name: 'get_audit_history',
     description: 'Retrieve the recorded multi-agent execution traces, routing decisions, tool calls, and verification outcomes.',
     inputSchema: z.object({
