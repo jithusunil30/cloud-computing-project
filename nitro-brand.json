@@ -1,7 +1,7 @@
 {
   "name": "Ecofinops Ai",
-  "theme": "auto",
-  "primaryColor": "#3B82F6",
-  "accentColor": "#3B82F6",
+  "theme": "dark",
+  "primaryColor": "#ffffff",
+  "accentColor": "#10b981",
   "hasLogo": true
 }

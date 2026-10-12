@@ -20,14 +20,14 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #070a12;
-      --bg-card: rgba(15, 23, 42, 0.75);
-      --bg-card-hover: rgba(30, 41, 59, 0.85);
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-highlight: rgba(16, 185, 129, 0.35);
+      --bg-dark: #000000;
+      --bg-card: rgba(12, 14, 20, 0.68);
+      --bg-card-hover: rgba(22, 26, 36, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.1);
+      --border-highlight: rgba(255, 255, 255, 0.38);
       --accent-green: #10b981;
-      --accent-cyan: #06b6d4;
-      --accent-indigo: #6366f1;
+      --accent-cyan: #38bdf8;
+      --accent-indigo: #818cf8;
       --accent-amber: #f59e0b;
       --accent-rose: #f43f5e;
       --text-main: #f8fafc;
@@ -35,23 +35,48 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html {
+      background-color: #000000;
+      color-scheme: dark;
+    }
+
     body {
-      background-color: var(--bg-dark);
+      background-color: #000000;
       background-image: 
-        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-        radial-gradient(at 50% 100%, rgba(6, 182, 212, 0.08) 0px, transparent 50%);
+        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 10% 90%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
       background-attachment: fixed;
       color: var(--text-main);
       font-family: 'Inter', system-ui, sans-serif;
       min-height: 100vh;
       line-height: 1.5;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Fixed White Glass Fluid Canvas */
+    #fluid-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header, main, footer {
+      position: relative;
+      z-index: 1;
     }
 
     header {
       border-bottom: 1px solid var(--border-subtle);
-      background: rgba(7, 10, 18, 0.85);
-      backdrop-filter: blur(16px);
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -690,6 +715,9 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
   </style>
 </head>
 <body>
+
+  <!-- Dynamic White Glass Fluid Background Canvas -->
+  <canvas id="fluid-canvas"></canvas>
 
   <header>
     <a href="/" class="brand">
@@ -2862,6 +2890,373 @@ export function renderEcoFinOpsPortalHtml(tools: any[] = [], mcpEndpoint: string
     window.fetchLiveStreamTick = fetchLiveStreamTick;
     window.updateServerlessCalculator = updateServerlessCalculator;
     window.runServerlessSimulation = runServerlessSimulation;
+
+    /* =========================================================================
+     * DYNAMIC WHITE GLASS FLUID INTERACTIVE BACKGROUND SIMULATION
+     * ========================================================================= */
+    (function initWhiteGlassFluidEngine() {
+      const canvas = document.getElementById('fluid-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d', { alpha: true });
+      if (!ctx) return;
+
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      let dpr = 1;
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      window.addEventListener('resize', resize, { passive: true });
+      resize();
+
+      // Fluid State & Physics
+      const pointer = {
+        x: width * 0.5,
+        y: height * 0.45,
+        targetX: width * 0.5,
+        targetY: height * 0.45,
+        prevX: width * 0.5,
+        prevY: height * 0.45,
+        speed: 0,
+        isHovered: false,
+        lastMoveTime: performance.now()
+      };
+
+      // Trail of viscous elastic liquid metaballs
+      const TRAIL_LENGTH = 22;
+      const trail = [];
+      for (let i = 0; i < TRAIL_LENGTH; i++) {
+        trail.push({
+          x: pointer.x,
+          y: pointer.y,
+          vx: 0,
+          vy: 0,
+          radius: Math.max(12, 48 * (1 - (i / TRAIL_LENGTH) * 0.72))
+        });
+      }
+
+      // Dynamic liquid glass droplets / splashes
+      const droplets = [];
+      const MAX_DROPLETS = 75;
+
+      // Caustic glass expanding wave ripples
+      const ripples = [];
+      const MAX_RIPPLES = 12;
+
+      // Ambient floating liquid glass orbs that drift and gravitate toward cursor
+      const ambientBlobs = [
+        { x: width * 0.18, y: height * 0.28, vx: 0.22, vy: 0.16, baseR: 65, phase: 0 },
+        { x: width * 0.78, y: height * 0.22, vx: -0.20, vy: 0.18, baseR: 85, phase: 1.5 },
+        { x: width * 0.85, y: height * 0.72, vx: -0.16, vy: -0.20, baseR: 70, phase: 3.1 },
+        { x: width * 0.22, y: height * 0.82, vx: 0.18, vy: -0.14, baseR: 80, phase: 4.8 },
+        { x: width * 0.52, y: height * 0.65, vx: 0.14, vy: 0.22, baseR: 90, phase: 2.2 }
+      ];
+
+      function spawnDroplet(x, y, vx, vy, baseRadius) {
+        if (droplets.length >= MAX_DROPLETS) droplets.shift();
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 2.5 + 0.5;
+        droplets.push({
+          x: x + (Math.random() - 0.5) * 12,
+          y: y + (Math.random() - 0.5) * 12,
+          vx: vx * 0.35 + Math.cos(angle) * speed,
+          vy: vy * 0.35 + Math.sin(angle) * speed,
+          radius: (Math.random() * 0.6 + 0.4) * (baseRadius || 24),
+          alpha: 0.85,
+          life: 1.0,
+          decay: Math.random() * 0.015 + 0.012
+        });
+      }
+
+      function spawnRipple(x, y, maxRadius) {
+        if (ripples.length >= MAX_RIPPLES) ripples.shift();
+        ripples.push({
+          x: x,
+          y: y,
+          radius: 8,
+          maxRadius: maxRadius || 140,
+          alpha: 0.65,
+          speed: 2.8 + Math.random() * 1.5
+        });
+      }
+
+      // Pointer listeners
+      window.addEventListener('pointermove', function(e) {
+        pointer.targetX = e.clientX;
+        pointer.targetY = e.clientY;
+        pointer.isHovered = true;
+        pointer.lastMoveTime = performance.now();
+
+        const dx = pointer.targetX - pointer.prevX;
+        const dy = pointer.targetY - pointer.prevY;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist > 6) {
+          const count = Math.min(3, Math.floor(dist / 8));
+          for (let k = 0; k < count; k++) {
+            spawnDroplet(pointer.targetX, pointer.targetY, dx * 0.15, dy * 0.15, 20);
+          }
+        }
+        if (dist > 35) {
+          spawnRipple(pointer.targetX, pointer.targetY, 90 + dist * 0.8);
+        }
+
+        pointer.prevX = pointer.targetX;
+        pointer.prevY = pointer.targetY;
+      }, { passive: true });
+
+      window.addEventListener('pointerdown', function(e) {
+        spawnRipple(e.clientX, e.clientY, 180);
+        for (let i = 0; i < 8; i++) {
+          spawnDroplet(e.clientX, e.clientY, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, 26);
+        }
+      }, { passive: true });
+
+      document.addEventListener('mouseleave', function() {
+        pointer.isHovered = false;
+      });
+
+      // Rendering: White Glass Optical Elements
+      function drawGlassMetaball(context, x, y, radius, alphaMultiplier) {
+        if (radius <= 0.5 || alphaMultiplier <= 0) return;
+
+        // 1. Milky frosted glass outer diffusion glow
+        const gradOuter = context.createRadialGradient(x, y, 0, x, y, radius * 1.6);
+        gradOuter.addColorStop(0, 'rgba(255, 255, 255, ' + (0.18 * alphaMultiplier) + ')');
+        gradOuter.addColorStop(0.35, 'rgba(240, 245, 255, ' + (0.08 * alphaMultiplier) + ')');
+        gradOuter.addColorStop(0.7, 'rgba(220, 230, 255, ' + (0.02 * alphaMultiplier) + ')');
+        gradOuter.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        context.fillStyle = gradOuter;
+        context.beginPath();
+        context.arc(x, y, radius * 1.6, 0, Math.PI * 2);
+        context.fill();
+
+        // 2. Translucent white glass body
+        const gradBody = context.createRadialGradient(x, y, 0, x, y, radius);
+        gradBody.addColorStop(0, 'rgba(255, 255, 255, ' + (0.48 * alphaMultiplier) + ')');
+        gradBody.addColorStop(0.5, 'rgba(245, 250, 255, ' + (0.22 * alphaMultiplier) + ')');
+        gradBody.addColorStop(0.85, 'rgba(235, 240, 255, ' + (0.07 * alphaMultiplier) + ')');
+        gradBody.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        context.fillStyle = gradBody;
+        context.beginPath();
+        context.arc(x, y, radius, 0, Math.PI * 2);
+        context.fill();
+
+        // 3. Crisp luminous glass rim / Fresnel reflection arc
+        context.strokeStyle = 'rgba(255, 255, 255, ' + (0.38 * alphaMultiplier) + ')';
+        context.lineWidth = Math.max(1, radius * 0.05);
+        context.beginPath();
+        context.arc(x, y, radius * 0.94, -Math.PI * 0.8, Math.PI * 0.2);
+        context.stroke();
+
+        // 4. White glass specular highlight (bright glistening glint on top-left)
+        const specX = x - radius * 0.28;
+        const specY = y - radius * 0.32;
+        const specR = radius * 0.38;
+        const gradSpec = context.createRadialGradient(specX, specY, 0, specX, specY, specR);
+        gradSpec.addColorStop(0, 'rgba(255, 255, 255, ' + (0.92 * alphaMultiplier) + ')');
+        gradSpec.addColorStop(0.4, 'rgba(255, 255, 255, ' + (0.45 * alphaMultiplier) + ')');
+        gradSpec.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        context.fillStyle = gradSpec;
+        context.beginPath();
+        context.arc(specX, specY, specR, 0, Math.PI * 2);
+        context.fill();
+      }
+
+      function drawFluidRibbon(context, p1, p2, alphaMultiplier) {
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist === 0 || dist > 260) return;
+
+        const nx = -dy / dist;
+        const ny = dx / dist;
+
+        const w1 = p1.radius * 0.72;
+        const w2 = p2.radius * 0.72;
+
+        const x1A = p1.x + nx * w1, y1A = p1.y + ny * w1;
+        const x1B = p1.x - nx * w1, y1B = p1.y - ny * w1;
+        const x2A = p2.x + nx * w2, y2A = p2.y + ny * w2;
+        const x2B = p2.x - nx * w2, y2B = p2.y - ny * w2;
+
+        const midX = (p1.x + p2.x) * 0.5;
+        const midY = (p1.y + p2.y) * 0.5;
+
+        // Viscous neck constriction
+        const pinch = 0.82;
+        const midXA = midX + nx * Math.min(w1, w2) * pinch;
+        const midYA = midY + ny * Math.min(w1, w2) * pinch;
+        const midXB = midX - nx * Math.min(w1, w2) * pinch;
+        const midYB = midY - ny * Math.min(w1, w2) * pinch;
+
+        // Fluid membrane gradient
+        const ribbonGrad = context.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+        ribbonGrad.addColorStop(0, 'rgba(255, 255, 255, ' + (0.28 * alphaMultiplier) + ')');
+        ribbonGrad.addColorStop(0.5, 'rgba(240, 245, 255, ' + (0.16 * alphaMultiplier) + ')');
+        ribbonGrad.addColorStop(1, 'rgba(255, 255, 255, ' + (0.24 * alphaMultiplier) + ')');
+
+        context.fillStyle = ribbonGrad;
+        context.beginPath();
+        context.moveTo(x1A, y1A);
+        context.quadraticCurveTo(midXA, midYA, x2A, y2A);
+        context.lineTo(x2B, y2B);
+        context.quadraticCurveTo(midXB, midYB, x1B, y1B);
+        context.closePath();
+        context.fill();
+
+        // Membrane specular sheen highlight
+        context.strokeStyle = 'rgba(255, 255, 255, ' + (0.38 * alphaMultiplier) + ')';
+        context.lineWidth = Math.max(1, Math.min(w1, w2) * 0.08);
+        context.beginPath();
+        context.moveTo(x1A, y1A);
+        context.quadraticCurveTo(midXA, midYA, x2A, y2A);
+        context.stroke();
+      }
+
+      // Animation Loop
+      let lastTime = performance.now();
+
+      function animate(now) {
+        requestAnimationFrame(animate);
+        const dt = Math.min((now - lastTime) / 1000, 0.1);
+        lastTime = now;
+
+        // Autonomous ambient drift if user is idle
+        const idleDuration = now - pointer.lastMoveTime;
+        if (!pointer.isHovered || idleDuration > 2500) {
+          const t = now * 0.0012;
+          const orbitRadiusX = Math.min(width * 0.32, 280);
+          const orbitRadiusY = Math.min(height * 0.22, 190);
+          pointer.targetX = width * 0.5 + Math.cos(t * 0.8) * orbitRadiusX + Math.sin(t * 1.6) * 45;
+          pointer.targetY = height * 0.45 + Math.sin(t * 0.6) * orbitRadiusY + Math.cos(t * 1.3) * 35;
+        }
+
+        // Smooth cursor interpolation (viscous spring physics)
+        pointer.x += (pointer.targetX - pointer.x) * 0.18;
+        pointer.y += (pointer.targetY - pointer.y) * 0.18;
+        pointer.speed = Math.hypot(pointer.targetX - pointer.x, pointer.targetY - pointer.y);
+
+        // Update trail nodes
+        trail[0].x = pointer.x;
+        trail[0].y = pointer.y;
+        const dynamicLeadR = Math.min(68, 42 + pointer.speed * 0.6);
+        trail[0].radius += (dynamicLeadR - trail[0].radius) * 0.2;
+
+        for (let i = 1; i < TRAIL_LENGTH; i++) {
+          const prev = trail[i - 1];
+          const curr = trail[i];
+
+          const spring = 0.38 - (i / TRAIL_LENGTH) * 0.12;
+          curr.vx = (curr.vx || 0) * 0.62 + (prev.x - curr.x) * spring;
+          curr.vy = (curr.vy || 0) * 0.62 + (prev.y - curr.y) * spring;
+          curr.x += curr.vx;
+          curr.y += curr.vy;
+
+          const baseR = Math.max(8, 44 * Math.pow(1 - (i / TRAIL_LENGTH), 0.75));
+          const targetR = baseR + Math.min(18, pointer.speed * 0.25 * (1 - i / TRAIL_LENGTH));
+          curr.radius += (targetR - curr.radius) * 0.2;
+        }
+
+        // Update ambient floating blobs
+        for (let i = 0; i < ambientBlobs.length; i++) {
+          const b = ambientBlobs[i];
+          b.phase += 0.015;
+          b.x += b.vx + Math.sin(b.phase) * 0.4;
+          b.y += b.vy + Math.cos(b.phase * 0.8) * 0.35;
+
+          if (b.x < 100) { b.x = 100; b.vx = Math.abs(b.vx); }
+          if (b.x > width - 100) { b.x = width - 100; b.vx = -Math.abs(b.vx); }
+          if (b.y < 100) { b.y = 100; b.vy = Math.abs(b.vy); }
+          if (b.y > height - 100) { b.y = height - 100; b.vy = -Math.abs(b.vy); }
+
+          const dCursor = Math.hypot(pointer.x - b.x, pointer.y - b.y);
+          if (dCursor < 320 && dCursor > 30) {
+            const pull = (1 - dCursor / 320) * 0.45;
+            b.x += (pointer.x - b.x) * pull * 0.04;
+            b.y += (pointer.y - b.y) * pull * 0.04;
+          }
+        }
+
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+
+        // 1. Render caustic expanding wave ripples
+        for (let i = ripples.length - 1; i >= 0; i--) {
+          const r = ripples[i];
+          r.radius += r.speed;
+          r.alpha *= 0.965;
+
+          if (r.alpha <= 0.01 || r.radius >= r.maxRadius) {
+            ripples.splice(i, 1);
+            continue;
+          }
+
+          ctx.strokeStyle = 'rgba(255, 255, 255, ' + (r.alpha * 0.55) + ')';
+          ctx.lineWidth = Math.max(1, 4 * (1 - r.radius / r.maxRadius));
+          ctx.beginPath();
+          ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(255, 255, 255, ' + (r.alpha * 0.2) + ')';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(r.x, r.y, Math.max(1, r.radius * 0.7), 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // 2. Render ambient floating liquid glass orbs
+        for (let i = 0; i < ambientBlobs.length; i++) {
+          const b = ambientBlobs[i];
+          const dynamicR = b.baseR + Math.sin(b.phase) * 8;
+          drawGlassMetaball(ctx, b.x, b.y, dynamicR, 0.65);
+        }
+
+        // 3. Render connecting fluid membranes between trail nodes
+        for (let i = 0; i < TRAIL_LENGTH - 1; i++) {
+          const alphaMul = Math.pow(1 - (i / TRAIL_LENGTH), 0.6);
+          drawFluidRibbon(ctx, trail[i], trail[i + 1], alphaMul);
+        }
+
+        // 4. Render trail nodes (from tail to head)
+        for (let i = TRAIL_LENGTH - 1; i >= 0; i--) {
+          const node = trail[i];
+          const alphaMul = Math.max(0.2, Math.pow(1 - (i / TRAIL_LENGTH) * 0.7, 0.8));
+          drawGlassMetaball(ctx, node.x, node.y, node.radius, alphaMul);
+        }
+
+        // 5. Render splashes and droplets
+        for (let i = droplets.length - 1; i >= 0; i--) {
+          const d = droplets[i];
+          d.x += d.vx;
+          d.y += d.vy;
+          d.vx *= 0.94;
+          d.vy *= 0.94;
+          d.life -= d.decay;
+
+          if (d.life <= 0) {
+            droplets.splice(i, 1);
+            continue;
+          }
+
+          const currentR = d.radius * (0.4 + d.life * 0.6);
+          const currentAlpha = d.alpha * d.life;
+          drawGlassMetaball(ctx, d.x, d.y, currentR, currentAlpha);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    })();
 
     window.addEventListener('load', () => {
       // Start live 5-second streaming
